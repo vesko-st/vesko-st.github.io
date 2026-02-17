@@ -68,7 +68,7 @@ a:hover {
   line-height: 1.65;
   color: rgba(255, 255, 255, 0.88);
   margin-bottom: 20px;
-  text-align: left;
+  text-align: justify;
 }
 
 .social-links {
@@ -158,6 +158,10 @@ a:hover {
 
 .tab-panel.active {
   display: block;
+}
+
+.tab-panel {
+  text-align: justify;
 }
 
 @keyframes fadeIn {
