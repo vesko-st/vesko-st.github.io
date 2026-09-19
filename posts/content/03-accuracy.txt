@@ -1,0 +1,5 @@
+# Accuracy
+
+[[TABLE:accuracy]]
+
+Among the no-reasoning configurations, Jev is the strongest system on CommonsenseQA and on the contamination-free MMLU-CF, and it ties Opus 5 on RACE-H, where the leading systems are already at the human ceiling. For a model this small, matching the frontier on plain accuracy was more than I expected going in.

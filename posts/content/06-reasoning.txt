@@ -1,0 +1,5 @@
+# Does reasoning change the picture?
+
+The obvious objection is that I hobbled the chat models by disabling reasoning, so I ran each of them again at _low_ and _medium_ reasoning effort (the extra rows in the tables above). Reasoning helps most on the quantitative MMLU-CF questions — Opus rises from 79% to 84%, Sonnet from 73% to 79% — and it is enough to let Opus edge past Jev by a point or two on the public benchmarks. But the gains are small, and they are not free: cost roughly doubles and latency stays around two seconds, an order of magnitude slower than Jev.
+
+On the long Grace-Coolidge article, reasoning does not help at all — Sonnet and Opus stay flat or dip slightly — and because the article dominates the token bill, turning it on barely changes the cost. The one clear benefit is that reasoning repairs a failure mode of the no-reasoning setup: the smaller models sometimes begin working the problem in their visible output and get truncated, and thinking gives them somewhere to do that work. Jev never has this problem, because a _Choice_ primitive returns a label by construction.

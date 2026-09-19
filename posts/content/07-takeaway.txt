@@ -1,0 +1,5 @@
+# What I take away
+
+None of this says frontier chat models are unnecessary — for open-ended generation they are indispensable. But a great deal of production NLP is not generation; it is classification, routing, extraction, and labeling. For that kind of work, this experiment is a reminder that a small, typed primitive can match frontier accuracy at a tiny fraction of the cost and latency, and without the fragility that comes from asking a chat model to behave like a classifier. It is worth paying frontier prices for open-ended reasoning — and worth not paying them to pick one of five options.
+
+[[PDF]]

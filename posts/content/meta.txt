@@ -1,0 +1,7 @@
+# Post metadata — edit these values, then run: python3 build_post.py
+title: Testing TypeSafe Jev on Text Understanding
+subtitle: Can a small, purpose-built classifier keep up with frontier chat models on reading and knowledge tasks? A reproducible, contamination-aware comparison.
+byline: Veselin Stoyanov
+footer: All results were regenerated from a fixed-seed, reproducible harness; accuracy, latency, and cost are measured, not quoted from leaderboards.
+og_desc: Can a small, purpose-built classifier keep up with frontier chat models on reading and knowledge tasks? A reproducible, contamination-aware comparison of TypeSafe Jev against Claude Haiku 4.5, Sonnet 5, and Opus 5.
+twitter_desc: A small typed classifier matches frontier Claude on multiple-choice accuracy at a fraction of the cost and latency.

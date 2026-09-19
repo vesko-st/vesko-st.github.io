@@ -1,0 +1,7 @@
+# A benchmark nothing could have memorized
+
+To be sure I was not simply measuring memorized test items, I hand-authored a corpus of 40 questions over the full Wikipedia article on Grace Coolidge. The whole article — about twenty thousand tokens — is supplied on every call, and every wrong option is a real name or value drawn from the text, so a model has to read rather than recall. Twenty of the questions are straightforward; the other twenty add negation, temporal ordering, and inference, and several are deliberately unanswerable, with "Not enough information" as the correct choice.
+
+[[TABLE:coolidge]]
+
+Here the long context is the whole point, and it is where the economics become stark. Jev answers at 90% accuracy — a single hard question behind the best Claude — for 84 cents per thousand questions, against roughly $130 for Opus 5. That is about a hundred and fifty times cheaper, at a tenth of the latency, because the twenty-thousand-token article is billed once as input rather than paid for again on the output side.

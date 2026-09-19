@@ -1,0 +1,7 @@
+# The cost of a correct answer
+
+Accuracy is only half the story. Jev bills for input tokens only and nothing for output, whereas the chat models add five to twenty-five dollars per million output tokens on top of costlier input.
+
+[[TABLE:cost]]
+
+On the short public benchmarks Jev is already forty to a hundred times cheaper than Opus 5. As the next section shows, that gap widens dramatically once the context grows.
