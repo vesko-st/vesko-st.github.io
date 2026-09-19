@@ -6,93 +6,92 @@
     <title>Testing TypeSafe Jev on Text Understanding &mdash; Veselin Stoyanov</title>
     <link rel="icon" type="image/x-icon" href="../favicon-32x32.png">
 
-    <!-- Open Graph / Twitter cards for nice link previews -->
+    <!-- Open Graph / Twitter cards for link previews -->
     <meta property="og:type" content="article">
     <meta property="og:title" content="Testing TypeSafe Jev on Text Understanding">
-    <meta property="og:description" content="TypeSafe's tiny 'Jev' classifier matches frontier Claude on multiple-choice accuracy at ~150x lower cost and ~10x lower latency. A reproducible, contamination-aware comparison.">
+    <meta property="og:description" content="Can a small, purpose-built classifier keep up with frontier chat models on reading and knowledge tasks? A reproducible, contamination-aware comparison of TypeSafe Jev against Claude Haiku 4.5, Sonnet 5, and Opus 5.">
     <meta property="og:image" content="https://vesstoyanov.com/posts/results-card.png">
     <meta property="og:url" content="https://vesstoyanov.com/posts/typesafe-jev-vs-claude.html">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Testing TypeSafe Jev on Text Understanding">
-    <meta name="twitter:description" content="A tiny typed classifier matches frontier Claude on multiple-choice accuracy at ~150x lower cost.">
+    <meta name="twitter:description" content="A small typed classifier matches frontier Claude on multiple-choice accuracy at a fraction of the cost and latency.">
     <meta name="twitter:image" content="https://vesstoyanov.com/posts/results-card.png">
 
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      :root { --accent: #2a7ab5; --accent-dark: #1a5a8a; --ink: #24292f; --muted: #6a737d; }
+      html { -webkit-text-size-adjust: 100%; }
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
           Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
-        font-size: 16px; line-height: 1.7; color: #3a3a3a; background: #f0f2f5;
+        font-size: 18px; line-height: 1.75; color: var(--ink); background: #fff;
         -webkit-font-smoothing: antialiased;
       }
-      a { color: #2a7ab5; text-decoration: none; transition: color 0.2s; }
-      a:hover { color: #1a5a8a; }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { color: var(--accent-dark); text-decoration: underline; }
 
-      .wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 60px; }
+      .wrap { max-width: 940px; margin: 0 auto; padding: 24px 28px 80px; }
 
-      .topbar { margin-bottom: 22px; font-size: 14px; }
-      .topbar a { color: #2a7ab5; font-weight: 500; }
+      .topbar { margin: 6px 0 30px; font-size: 15px; }
+      .topbar a { color: var(--accent); font-weight: 500; }
+      .topbar a:hover { text-decoration: none; }
 
-      article {
-        background: #fff; border-radius: 12px; padding: 40px 44px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      header.post { border-bottom: 3px solid var(--accent); padding-bottom: 22px; margin-bottom: 34px; }
+      h1 { font-size: 40px; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em;
+        color: var(--ink); margin-bottom: 14px; }
+      .subtitle { font-size: 20px; color: var(--muted); font-weight: 400; line-height: 1.5; }
+      .byline { font-size: 15px; color: var(--muted); margin-top: 16px; }
+
+      article { }
+      article p { margin: 0 0 22px; }
+      article > p:first-of-type { font-size: 19px; }
+
+      h2 { font-size: 26px; font-weight: 650; color: var(--ink); letter-spacing: -0.01em;
+        margin: 46px 0 16px; padding-left: 14px; border-left: 4px solid var(--accent); }
+
+      em { color: #33383e; }
+      strong { color: var(--ink); }
+
+      figure { margin: 30px 0; }
+      figure img { width: 100%; height: auto; border: 1px solid #e6e9ee; border-radius: 8px; }
+      figcaption { font-size: 14px; color: var(--muted); margin-top: 10px; text-align: center; }
+
+      pre.prompt {
+        background: #f6f8fa; border: 1px solid #e4e8ec; border-radius: 8px;
+        padding: 18px 20px; overflow-x: auto; font-size: 14px; line-height: 1.55;
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+        color: #2b3138; margin: 8px 0 26px; white-space: pre;
       }
+      pre.prompt .lbl { color: var(--accent); font-weight: 600; }
 
-      h1 { font-size: 30px; font-weight: 700; color: #1c2530; line-height: 1.25;
-        letter-spacing: -0.01em; margin-bottom: 8px; }
-      .subtitle { font-size: 17px; color: #5b6470; margin-bottom: 14px; }
-      .byline { font-size: 13px; color: #9aa2ad; margin-bottom: 26px;
-        border-bottom: 1px solid #eee; padding-bottom: 20px; }
-
-      h2 { font-size: 21px; font-weight: 650; color: #222; margin: 34px 0 12px;
-        letter-spacing: -0.01em; }
-      p { margin-bottom: 14px; color: #444; }
-      strong { color: #222; }
-
-      .tldr {
-        background: #eaf3fa; border-left: 4px solid #2a7ab5; border-radius: 8px;
-        padding: 18px 22px; margin: 8px 0 28px;
-      }
-      .tldr h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em;
-        color: #2a7ab5; margin-bottom: 8px; }
-      .tldr ul { margin: 0 0 0 18px; }
-      .tldr li { margin-bottom: 6px; color: #37414c; }
-
-      figure { margin: 24px 0; }
-      figure img { width: 100%; height: auto; border-radius: 10px;
-        border: 1px solid #e6e9ee; }
-      figcaption { font-size: 12.5px; color: #9aa2ad; margin-top: 8px; text-align: center; }
-
-      .table-scroll { overflow-x: auto; margin: 18px 0 6px; }
-      table.results { width: 100%; border-collapse: collapse; font-size: 14px;
-        min-width: 520px; }
-      table.results caption { caption-side: top; text-align: left;
-        font-size: 13px; color: #5b6470; margin-bottom: 8px; font-weight: 600; }
-      table.results th, table.results td { padding: 9px 12px; text-align: right;
-        border-bottom: 1px solid #eef1f4; white-space: nowrap; }
+      .table-scroll { overflow-x: auto; margin: 24px 0 8px; }
+      table.results { width: 100%; border-collapse: collapse; font-size: 16px; }
+      table.results caption { caption-side: top; text-align: left; font-size: 15px;
+        color: var(--muted); margin-bottom: 10px; font-weight: 600; }
+      table.results th, table.results td { padding: 10px 16px; text-align: right;
+        border-bottom: 1px solid #eceff2; white-space: nowrap; }
       table.results th:first-child, table.results td:first-child { text-align: left; }
-      table.results thead th { background: #2a7ab5; color: #fff; font-weight: 600;
+      table.results thead th { background: var(--accent); color: #fff; font-weight: 600;
         border-bottom: none; }
-      table.results thead th:first-child { border-top-left-radius: 6px; }
-      table.results thead th:last-child { border-top-right-radius: 6px; }
-      table.results tr.jev { background: #e8f6ee; }
-      table.results tr.jev td { font-weight: 700; color: #1c2530; }
-      table.results .best { font-weight: 700; color: #1c2530; }
-      table.results .grp td { border-top: 2px solid #dde3ea; }
-      .tnote { font-size: 12.5px; color: #9aa2ad; margin: 6px 0 22px; }
+      table.results tbody tr.jev { background: #e8f6ee; }
+      table.results tbody tr.jev td { font-weight: 700; }
+      table.results .best { font-weight: 700; }
+      table.results tr.grp td { border-top: 2px solid #dfe4e9; }
+      .tnote { font-size: 15px; color: var(--muted); margin: 8px 0 24px; }
 
-      .cta { display: inline-block; margin-top: 6px; margin-right: 10px;
-        background: #2a7ab5; color: #fff; padding: 9px 16px; border-radius: 8px;
-        font-weight: 600; font-size: 14px; }
-      .cta:hover { background: #1a5a8a; color: #fff; }
-      .cta.secondary { background: #eef2f6; color: #2a7ab5; }
-      .cta.secondary:hover { background: #e0e8ef; }
+      .cta { display: inline-block; margin-top: 8px; background: var(--accent); color: #fff;
+        padding: 11px 20px; border-radius: 8px; font-weight: 600; font-size: 16px; }
+      .cta:hover { background: var(--accent-dark); color: #fff; text-decoration: none; }
 
-      footer { text-align: center; color: #b7bcc4; font-size: 12px; padding-top: 26px; }
+      footer.post { margin-top: 46px; padding-top: 22px; border-top: 1px solid #eceff2;
+        font-size: 14px; color: var(--muted); }
 
-      @media (max-width: 600px) {
-        article { padding: 26px 20px; }
-        h1 { font-size: 24px; }
+      @media (max-width: 640px) {
+        body { font-size: 17px; }
+        .wrap { padding: 16px 18px 56px; }
+        h1 { font-size: 30px; }
+        .subtitle { font-size: 18px; }
+        h2 { font-size: 22px; }
       }
     </style>
   </head>
@@ -100,56 +99,72 @@
     <div class="wrap">
       <div class="topbar"><a href="../index.html">&larr; Veselin Stoyanov</a></div>
 
-      <article>
+      <header class="post">
         <h1>Testing TypeSafe Jev on Text Understanding</h1>
-        <p class="subtitle">A tiny typed classifier matched frontier Claude on multiple-choice
-          accuracy &mdash; at roughly 150&times; lower cost and 10&times; lower latency.</p>
-        <p class="byline">Veselin Stoyanov &middot; A reproducible, contamination-aware comparison</p>
+        <p class="subtitle">Can a small, purpose-built classifier keep up with frontier chat
+          models on reading and knowledge tasks? A reproducible, contamination-aware comparison.</p>
+        <p class="byline">Veselin Stoyanov</p>
+      </header>
 
-        <div class="tldr">
-          <h3>TL;DR</h3>
-          <ul>
-            <li>I compared TypeSafe&rsquo;s System One <em>Choice</em> primitive (&ldquo;Jev&rdquo;)
-              against the latest Claude models &mdash; Haiku&nbsp;4.5, Sonnet&nbsp;5, Opus&nbsp;5 &mdash;
-              on four multiple-choice benchmarks.</li>
-            <li>In a matched, answer-only setting, Jev is the top system on CommonsenseQA and MMLU-CF,
-              ties Opus&nbsp;5 on RACE-H, and lands one question behind Opus on a hand-authored corpus.</li>
-            <li>On long-context questions it&rsquo;s <strong>~150&times; cheaper</strong>
-              ($0.84 vs $129.69 per 1,000) and <strong>~10&times; faster</strong>.</li>
-            <li>Turning reasoning on lets Opus edge ahead by 1&ndash;5 points on the public sets &mdash;
-              for 2&ndash;12&times; the cost and ~10&times; the latency, and no gain on the long article.</li>
-          </ul>
-        </div>
+      <article>
+        <p>For most of my career, the workhorse of applied NLP was not a chatbot but a classifier
+          &mdash; a model trained to answer one narrow question and return a label. Frontier chat
+          models have become so capable, and so convenient, that it is now tempting to route every
+          task through them, including tasks that are, at their core, a choice among a handful of
+          options. I wanted to understand what that convenience really costs, and whether a small,
+          purpose-built classifier can still hold its own on accuracy.</p>
+
+        <p>The occasion was TypeSafe&rsquo;s System One primitives &mdash; compact models that take
+          some context and return a typed judgment rather than free text. Their <em>Choice</em>
+          primitive, which the team calls <strong>Jev</strong>, takes a passage and a question, is
+          given a set of options, and returns exactly one of them. That is precisely the shape of a
+          multiple-choice benchmark, so I set up a head-to-head against the current frontier Claude
+          models: Haiku&nbsp;4.5, Sonnet&nbsp;5, and Opus&nbsp;5.</p>
+
+        <p>There is a wrinkle in any comparison like this: the public benchmarks we reach for by
+          default may already sit in the models&rsquo; pretraining data, and the headline numbers we
+          remember are often a generation out of date. So I did two things. First, I re-ran every
+          model myself under a single fixed protocol rather than trusting stale leaderboards. Second,
+          I added two hedges against contamination &mdash; MMLU-CF, an explicitly contamination-free
+          variant of MMLU, and a small corpus I wrote by hand over a single long article, which I
+          describe later.</p>
 
         <figure>
-          <img src="results-card.png" alt="Results card: TypeSafe Jev vs Claude Haiku 4.5, Sonnet 5, Opus 5 across four multiple-choice benchmarks">
-          <figcaption>Matched setting (answer-only, no reasoning). Cost is USD per 1,000
-            long-context questions.</figcaption>
+          <img src="results-card.png" alt="Summary: TypeSafe Jev vs Claude Haiku 4.5, Sonnet 5, Opus 5 across four multiple-choice benchmarks, with accuracy and cost.">
+          <figcaption>A summary of the results. Cost is in USD per 1,000 long-context questions.</figcaption>
         </figure>
 
-        <h2>Why bother? Benchmarks may be memorized</h2>
-        <p>Public leaderboard numbers for reading-comprehension and knowledge benchmarks are both
-          <em>stale</em> (they predate the current model generation) and potentially
-          <em>contaminated</em> (test items may sit in pretraining data). So rather than trust
-          historical figures, I re-ran the current models myself under one fixed protocol, and added
-          two hedges against contamination: <strong>MMLU-CF</strong> (an explicitly contamination-free
-          MMLU variant) and <strong>Grace-Coolidge</strong>, a corpus I hand-authored over a single
-          long Wikipedia article where every wrong answer also appears in the text &mdash; so answering
-          requires reading, not recall.</p>
-
         <h2>The setup</h2>
-        <p>Four benchmarks: RACE-H (passage-grounded reading comprehension), CommonsenseQA (commonsense
-          knowledge), MMLU-CF (multi-domain knowledge, contamination-free), and Grace-Coolidge (40
-          hand-authored questions over a ~20k-token article). Every system sees identical items
-          (<em>n</em>&nbsp;=&nbsp;100 per public benchmark, fixed seed).</p>
-        <p><strong>Jev</strong> is the TypeSafe <em>Choice</em> primitive: state = passage + question,
-          options passed as the choice criteria. <strong>Claude</strong> is the Anthropic Messages API
-          with a system prompt requesting only the answer letter, run at three reasoning settings:
-          <em>none</em> (thinking disabled), <em>low</em>, and <em>medium</em>. Cost is metered from
-          actual token usage and priced at published rates (per 1M tokens: Jev $0.042 input / $0 output;
-          Haiku 1/5, Sonnet 2/10, Opus 5/25).</p>
+        <p>I used four benchmarks: RACE-H (passage-grounded reading comprehension), CommonsenseQA
+          (commonsense knowledge), MMLU-CF (multi-domain knowledge, contamination-free), and my own
+          Grace-Coolidge corpus. For the three public benchmarks I sampled 100 items each with a
+          fixed seed, so every system sees identical questions.</p>
 
-        <h2>Accuracy across all settings</h2>
+        <p>The two systems answer the same question in different ways. Jev receives the passage and
+          question as its state and the options as its choice criteria, and returns one option.
+          Claude receives a plain-text prompt and is asked, through a system instruction, to reply
+          with only the answer letter:</p>
+
+<pre class="prompt"><span class="lbl">System:</span> You are answering a multiple-choice question. Respond with ONLY
+the single letter of the correct option (one of the provided labels)
+and nothing else. No explanation.
+
+<span class="lbl">User:</span> Question: You can do knitting to get the feeling of what?
+Options:
+A. relaxation
+B. arthritis
+C. adrenaline
+D. your
+E. sweater may produced</pre>
+
+        <p>To keep the comparison honest, I first ran Claude with <em>no reasoning</em> &mdash;
+          extended thinking disabled and the output capped to a single letter &mdash; since that is
+          the apples-to-apples setting for a classifier. I revisit what happens when reasoning is
+          switched on further down. Cost is metered from actual token usage and priced at published
+          rates (per million tokens: Jev at $0.042 input and free output; Haiku 1/5, Sonnet 2/10,
+          Opus 5/25 for input/output).</p>
+
+        <h2>Accuracy</h2>
         <div class="table-scroll">
           <table class="results">
             <caption>Accuracy by system and dataset (measured, n = 100, seed 42).</caption>
@@ -170,11 +185,18 @@
             </tbody>
           </table>
         </div>
-        <p class="tnote">Among the no-reasoning configurations, Jev leads on CommonsenseQA and MMLU-CF
-          and ties Opus on RACE-H. With reasoning on, Opus (low) and Sonnet (medium) edge ahead by a
-          point or two &mdash; see the cost of doing so below.</p>
+        <p class="tnote">Reasoning tiers are shown together for completeness; the discussion below
+          starts with the no-reasoning rows.</p>
 
-        <h2>Cost tells the real story</h2>
+        <p>Among the no-reasoning configurations, Jev is the strongest system on CommonsenseQA and on
+          the contamination-free MMLU-CF, and it ties Opus&nbsp;5 on RACE-H, where the leading
+          systems are already at the human ceiling. For a model this small, matching the frontier on
+          plain accuracy was more than I expected going in.</p>
+
+        <h2>The cost of a correct answer</h2>
+        <p>Accuracy is only half the story. Jev bills for input tokens only and nothing for output,
+          whereas the chat models add five to twenty-five dollars per million output tokens on top of
+          costlier input.</p>
         <div class="table-scroll">
           <table class="results">
             <caption>Cost in USD per 1,000 questions (metered tokens &times; published rates).</caption>
@@ -195,17 +217,17 @@
             </tbody>
           </table>
         </div>
-        <p class="tnote">Jev bills input tokens only; chat models add $5&ndash;$25/1M output on top of
-          costlier input. Note the two thinking APIs price differently: gen-5 <em>adaptive</em> thinking
-          (Sonnet, Opus) spends only the tokens a question needs &mdash; often near zero on easy items
-          &mdash; while Haiku&rsquo;s fixed <em>budget</em> thinking spends up to the budget regardless,
-          inflating its cost tenfold for a two-point gain.</p>
+        <p>On the short public benchmarks Jev is already forty to a hundred times cheaper than
+          Opus&nbsp;5. As the next section shows, that gap widens dramatically once the context grows.</p>
 
-        <h2>The contamination-controlled corpus</h2>
-        <p>Grace-Coolidge supplies the whole article on every call and every distractor is an in-passage,
-          semantically valid name or value. The hard split adds negation, temporal-ordering, and
-          inference questions &mdash; several deliberately unanswerable (the correct answer is
-          &ldquo;Not enough information&rdquo;).</p>
+        <h2>A benchmark nothing could have memorized</h2>
+        <p>To be sure I was not simply measuring memorized test items, I hand-authored a corpus of 40
+          questions over the full Wikipedia article on Grace Coolidge. The whole article &mdash; about
+          twenty thousand tokens &mdash; is supplied on every call, and every wrong option is a real
+          name or value drawn from the text, so a model has to read rather than recall. Twenty of the
+          questions are straightforward; the other twenty add negation, temporal ordering, and
+          inference, and several are deliberately unanswerable, with &ldquo;Not enough
+          information&rdquo; as the correct choice.</p>
         <div class="table-scroll">
           <table class="results">
             <caption>Grace-Coolidge (n = 40): accuracy, latency, and cost (~20k-token article per call).</caption>
@@ -226,23 +248,41 @@
             </tbody>
           </table>
         </div>
-        <p class="tnote">On the easy split every system except no-reasoning Haiku scores 100%; the hard
-          split is the discriminator. Reasoning&rsquo;s clearest win here is repairing Haiku&rsquo;s
-          no-reasoning penalty (70% &rarr; 90%); it doesn&rsquo;t help Sonnet or Opus, and because the
-          article dominates the token bill, turning it on barely moves cost.</p>
+        <p>Here the long context is the whole point, and it is where the economics become stark. Jev
+          answers at 90% accuracy &mdash; a single hard question behind the best Claude &mdash; for 84
+          cents per thousand questions, against roughly $130 for Opus&nbsp;5. That is about a hundred
+          and fifty times cheaper, at a tenth of the latency, because the twenty-thousand-token
+          article is billed once as input rather than paid for again on the output side.</p>
 
-        <h2>Takeaway</h2>
-        <p>For high-volume classification and labeling in production, a small typed primitive can match
-          frontier accuracy at a tiny fraction of the cost and latency. Pay frontier-chat prices for
-          open-ended generation &mdash; not for picking one of five options. Reasoning is a real lever
-          for the frontier models on quantitative questions, but it buys a point or two at a steep
-          multiple, and does nothing on long-context reading.</p>
+        <h2>Does reasoning change the picture?</h2>
+        <p>The obvious objection is that I hobbled the chat models by disabling reasoning, so I ran
+          each of them again at <em>low</em> and <em>medium</em> reasoning effort (the extra rows in
+          the tables above). Reasoning helps most on the quantitative MMLU-CF questions &mdash; Opus
+          rises from 79% to 84%, Sonnet from 73% to 79% &mdash; and it is enough to let Opus edge
+          past Jev by a point or two on the public benchmarks. But the gains are small, and they are
+          not free: cost roughly doubles and latency stays around two seconds, an order of magnitude
+          slower than Jev.</p>
+        <p>On the long Grace-Coolidge article, reasoning does not help at all &mdash; Sonnet and Opus
+          stay flat or dip slightly &mdash; and because the article dominates the token bill, turning
+          it on barely changes the cost. The one clear benefit is that reasoning repairs a failure
+          mode of the no-reasoning setup: the smaller models sometimes begin working the problem in
+          their visible output and get truncated, and thinking gives them somewhere to do that work.
+          Jev never has this problem, because a <em>Choice</em> primitive returns a label by
+          construction.</p>
 
-        <p style="margin-top:24px;">
-          <a class="cta" href="typesafe-jev-vs-claude.pdf">Read the full paper (PDF)</a>
-        </p>
+        <h2>What I take away</h2>
+        <p>None of this says frontier chat models are unnecessary &mdash; for open-ended generation
+          they are indispensable. But a great deal of production NLP is not generation; it is
+          classification, routing, extraction, and labeling. For that kind of work, this experiment
+          is a reminder that a small, typed primitive can match frontier accuracy at a tiny fraction
+          of the cost and latency, and without the fragility that comes from asking a chat model to
+          behave like a classifier. It is worth paying frontier prices for open-ended reasoning
+          &mdash; and worth not paying them to pick one of five options.</p>
 
-        <footer>&copy; Veselin Stoyanov &middot; results regenerated from a fixed-seed, reproducible harness.</footer>
+        <p><a class="cta" href="typesafe-jev-vs-claude.pdf">Read the full write-up (PDF)</a></p>
+
+        <footer class="post">All results were regenerated from a fixed-seed, reproducible harness;
+          accuracy, latency, and cost are measured, not quoted from leaderboards.</footer>
       </article>
     </div>
   </body>
