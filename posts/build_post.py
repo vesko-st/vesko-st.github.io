@@ -81,15 +81,18 @@ COOLIDGE = {
 }
 
 SALES = {
-    "caption": "Customer/sales-style tasks (n = 500 test, seed 13). Accuracy with the "
-    "majority-class baseline in parentheses, and ECE (expected calibration error, "
-    "lower is better).",
-    "headers": ["Task", "Majority", "Claude Haiku 4.5", "Claude Sonnet 5", "TypeSafe Jev", "Haiku ECE", "Sonnet ECE", "Jev ECE"],
+    "caption": "Customer/sales-style tasks (n = 500 test, seed 13). Accuracy against the "
+    "majority-class baseline, published SOTA*, and ECE (expected calibration error, "
+    "lower is better). *Published SOTA are supervised models trained specifically "
+    "for each task \u2014 different inputs, label sets, or evaluation subsets \u2014 so "
+    "they are not directly comparable to this zero-shot setup; \u201c\u2014\u201d marks "
+    "tasks with no comparable published benchmark.",
+    "headers": ["Task", "Majority", "Published SOTA*", "Claude Haiku 4.5", "Claude Sonnet 5", "TypeSafe Jev", "Haiku ECE", "Sonnet ECE", "Jev ECE"],
     "rows": [
-        ["Amazon QA \u2014 yes/no (Noul)", "73.0%", "61.1%", "60.4%", "62.8%", "0.201", "0.098", "0.076"],
-        ["Persuasion \u2014 did they donate? (Noul)", "54.0%", "71.4%", "70.7%", "71.2%", "0.239", "0.214", "0.219"],
-        ["Persuasion \u2014 strategy, 18-way (Choice)", "18.8%", "40.7%", "52.6%", "44.2%", "0.445", "0.196", "0.245"],
-        ["Craigslist \u2014 reached a deal? (Noul)", "77.6%", "90.2%", "92.8%", "91.8%", "0.044", "0.034", "0.015"],
+        ["Amazon QA \u2014 yes/no (Noul)", "73.0%", "76.8%", "61.1%", "60.4%", "62.8%", "0.201", "0.098", "0.076"],
+        ["Persuasion \u2014 did they donate? (Noul)", "54.0%", "\u2014", "71.4%", "70.7%", "71.2%", "0.239", "0.214", "0.219"],
+        ["Persuasion \u2014 strategy, 18-way (Choice)", "18.8%", "79.5%", "40.7%", "52.6%", "44.2%", "0.445", "0.196", "0.245"],
+        ["Craigslist \u2014 reached a deal? (Noul)", "77.6%", "\u2014", "90.2%", "92.8%", "91.8%", "0.044", "0.034", "0.015"],
     ],
 }
 
@@ -292,6 +295,9 @@ TEMPLATE = """<!doctype html>
         h2 {{ font-size: 22px; }}
       }}
     </style>
+    <!-- Analytics: GoatCounter (cookieless). -->
+    <script data-goatcounter="https://vesstoyanov.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
   </head>
   <body>
     <div class="wrap">
