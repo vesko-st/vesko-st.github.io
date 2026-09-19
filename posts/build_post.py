@@ -84,12 +84,12 @@ SALES = {
     "caption": "Customer/sales-style tasks (n = 500 test, seed 13). Accuracy with the "
     "majority-class baseline in parentheses, and ECE (expected calibration error, "
     "lower is better).",
-    "headers": ["Task", "Majority", "Claude Haiku 4.5", "TypeSafe Jev", "Haiku ECE", "Jev ECE"],
+    "headers": ["Task", "Majority", "Claude Haiku 4.5", "Claude Sonnet 5", "TypeSafe Jev", "Haiku ECE", "Sonnet ECE", "Jev ECE"],
     "rows": [
-        ["Amazon QA \u2014 yes/no (Noul)", "73.0%", "61.1%", "62.8%", "0.201", "0.076"],
-        ["Persuasion \u2014 did they donate? (Noul)", "54.0%", "71.4%", "71.2%", "0.239", "0.219"],
-        ["Persuasion \u2014 strategy, 18-way (Choice)", "18.8%", "40.7%", "44.2%", "0.445", "0.245"],
-        ["Craigslist \u2014 reached a deal? (Noul)", "77.6%", "90.2%", "91.8%", "0.044", "0.015"],
+        ["Amazon QA \u2014 yes/no (Noul)", "73.0%", "61.1%", "60.4%", "62.8%", "0.201", "0.098", "0.076"],
+        ["Persuasion \u2014 did they donate? (Noul)", "54.0%", "71.4%", "70.7%", "71.2%", "0.239", "0.214", "0.219"],
+        ["Persuasion \u2014 strategy, 18-way (Choice)", "18.8%", "40.7%", "52.6%", "44.2%", "0.445", "0.196", "0.245"],
+        ["Craigslist \u2014 reached a deal? (Noul)", "77.6%", "90.2%", "92.8%", "91.8%", "0.044", "0.034", "0.015"],
     ],
 }
 
