@@ -80,7 +80,20 @@ COOLIDGE = {
     ],
 }
 
-TABLES = {"accuracy": ACCURACY, "cost": COST, "coolidge": COOLIDGE}
+SALES = {
+    "caption": "Customer/sales-style tasks (n = 500 test, seed 13). Accuracy with the "
+    "majority-class baseline in parentheses, and ECE (expected calibration error, "
+    "lower is better).",
+    "headers": ["Task", "Majority", "Claude Haiku 4.5", "TypeSafe Jev", "Haiku ECE", "Jev ECE"],
+    "rows": [
+        ["Amazon QA \u2014 yes/no (Noul)", "73.0%", "61.1%", "62.8%", "0.201", "0.076"],
+        ["Persuasion \u2014 did they donate? (Noul)", "54.0%", "71.4%", "71.2%", "0.239", "0.219"],
+        ["Persuasion \u2014 strategy, 18-way (Choice)", "18.8%", "40.7%", "44.2%", "0.445", "0.245"],
+        ["Craigslist \u2014 reached a deal? (Noul)", "77.6%", "90.2%", "91.8%", "0.044", "0.015"],
+    ],
+}
+
+TABLES = {"accuracy": ACCURACY, "cost": COST, "coolidge": COOLIDGE, "sales": SALES}
 
 
 # ── Rendering helpers ────────────────────────────────────────────────────────
@@ -92,11 +105,24 @@ def inline(text: str) -> str:
 
 
 def render_table(spec: dict) -> str:
-    head = "".join(f"<th>{html.escape(h)}</th>" for h in spec["headers"])
-    body = "\n".join(
-        "              <tr>" + "".join(f"<td>{html.escape(c)}</td>" for c in row) + "</tr>"
-        for row in spec["rows"]
+    headers = spec["headers"]
+    # Highlight Jev wherever it appears: as a row (MC tables) or a column (sales table).
+    jev_col = next((i for i, h in enumerate(headers) if h.strip() == "TypeSafe Jev"), None)
+    head = "".join(
+        f'<th{" class=\"jev\"" if i == jev_col else ""}>{html.escape(h)}</th>'
+        for i, h in enumerate(headers)
     )
+    body_rows = []
+    for row in spec["rows"]:
+        is_jev_row = str(row[0]).strip() == "TypeSafe Jev"
+        tr_cls = ' class="jev"' if is_jev_row else ""
+        cells = "".join(
+            f'<td{" class=\"jev\"" if (not is_jev_row and i == jev_col) else ""}>'
+            f"{html.escape(c)}</td>"
+            for i, c in enumerate(row)
+        )
+        body_rows.append(f"              <tr{tr_cls}>{cells}</tr>")
+    body = "\n".join(body_rows)
     return (
         '        <div class="table-scroll">\n'
         '          <table class="results">\n'
@@ -197,7 +223,7 @@ TEMPLATE = """<!doctype html>
 
     <style>
       *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
-      :root {{ --accent: #2a7ab5; --accent-dark: #1a5a8a; --ink: #24292f; --muted: #6a737d; --rule: #333a42; }}
+      :root {{ --accent: #2a7ab5; --accent-dark: #1a5a8a; --ink: #24292f; --muted: #6a737d; --rule: #333a42; --jev: #eaf3fb; }}
       html {{ -webkit-text-size-adjust: 100%; }}
       body {{
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
@@ -247,6 +273,9 @@ TEMPLATE = """<!doctype html>
       table.results th, table.results td {{ padding: 8px 18px; text-align: right; }}
       table.results th:first-child, table.results td:first-child {{ text-align: left; }}
       table.results thead th {{ font-weight: 600; border-bottom: 1px solid var(--rule); }}
+      /* Highlight the TypeSafe Jev row (MC tables) or column (sales table). */
+      table.results tr.jev td, table.results tr.jev th,
+      table.results td.jev, table.results thead th.jev {{ background: var(--jev); font-weight: 600; }}
 
       .cta {{ display: inline-block; margin-top: 8px; background: var(--accent); color: #fff;
         padding: 11px 20px; border-radius: 8px; font-weight: 600; font-size: 16px; }}

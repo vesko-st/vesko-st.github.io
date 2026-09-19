@@ -19,7 +19,7 @@
 
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      :root { --accent: #2a7ab5; --accent-dark: #1a5a8a; --ink: #24292f; --muted: #6a737d; --rule: #333a42; }
+      :root { --accent: #2a7ab5; --accent-dark: #1a5a8a; --ink: #24292f; --muted: #6a737d; --rule: #333a42; --jev: #eaf3fb; }
       html { -webkit-text-size-adjust: 100%; }
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
@@ -69,6 +69,9 @@
       table.results th, table.results td { padding: 8px 18px; text-align: right; }
       table.results th:first-child, table.results td:first-child { text-align: left; }
       table.results thead th { font-weight: 600; border-bottom: 1px solid var(--rule); }
+      /* Highlight the TypeSafe Jev row (MC tables) or column (sales table). */
+      table.results tr.jev td, table.results tr.jev th,
+      table.results td.jev, table.results thead th.jev { background: var(--jev); font-weight: 600; }
 
       .cta { display: inline-block; margin-top: 8px; background: var(--accent); color: #fff;
         padding: 11px 20px; border-radius: 8px; font-weight: 600; font-size: 16px; }
@@ -150,7 +153,7 @@ E. sweater may produced</pre>
               <tr><td>Claude Opus 5</td><td>90.0%</td><td>79.0%</td><td>95.0%</td></tr>
               <tr><td>Claude Opus 5 (low)</td><td>95.0%</td><td>84.0%</td><td>96.0%</td></tr>
               <tr><td>Claude Opus 5 (medium)</td><td>93.0%</td><td>82.0%</td><td>96.0%</td></tr>
-              <tr><td>TypeSafe Jev</td><td>91.0%</td><td>80.0%</td><td>95.0%</td></tr>
+              <tr class="jev"><td>TypeSafe Jev</td><td>91.0%</td><td>80.0%</td><td>95.0%</td></tr>
             </tbody>
           </table>
         </div>
@@ -178,7 +181,7 @@ E. sweater may produced</pre>
               <tr><td>Claude Opus 5</td><td>$0.658</td><td>$0.822</td><td>$3.335</td></tr>
               <tr><td>Claude Opus 5 (low)</td><td>$1.123</td><td>$1.544</td><td>$3.437</td></tr>
               <tr><td>Claude Opus 5 (medium)</td><td>$1.542</td><td>$2.140</td><td>$3.652</td></tr>
-              <tr><td>TypeSafe Jev</td><td>$0.015</td><td>$0.016</td><td>$0.031</td></tr>
+              <tr class="jev"><td>TypeSafe Jev</td><td>$0.015</td><td>$0.016</td><td>$0.031</td></tr>
             </tbody>
           </table>
         </div>
@@ -206,7 +209,7 @@ E. sweater may produced</pre>
               <tr><td>Claude Opus 5</td><td>92.5%</td><td>2252 ms</td><td>$129.69</td></tr>
               <tr><td>Claude Opus 5 (low)</td><td>90.0%</td><td>1960 ms</td><td>$129.95</td></tr>
               <tr><td>Claude Opus 5 (medium)</td><td>90.0%</td><td>2181 ms</td><td>$130.21</td></tr>
-              <tr><td>TypeSafe Jev</td><td>90.0%</td><td>429 ms</td><td>$0.84</td></tr>
+              <tr class="jev"><td>TypeSafe Jev</td><td>90.0%</td><td>429 ms</td><td>$0.84</td></tr>
             </tbody>
           </table>
         </div>
@@ -220,7 +223,33 @@ E. sweater may produced</pre>
 
         <p>On the long Grace-Coolidge article, reasoning does not help at all — Sonnet and Opus stay flat or dip slightly — and because the article dominates the token bill, turning it on barely changes the cost. The one clear benefit is that reasoning repairs a failure mode of the no-reasoning setup: the smaller models sometimes begin working the problem in their visible output and get truncated, and thinking gives them somewhere to do that work. Jev never has this problem, because a <em>Choice</em> primitive returns a label by construction.</p>
 
-<!-- ===== 07-takeaway ===== -->
+<!-- ===== 07-sales ===== -->
+        <h2>What about customer or sales data?</h2>
+
+        <p>Multiple choice is one shape of problem, and the neat one. A lot of the work I actually care about is messier: yes/no questions, picking one label out of many, rating something on a scale — and, crucially, getting back a probability you can trust enough to act on. TypeSafe exposes exactly those as three primitives — Noul for yes/no, Choice for one-of-N, and Score for an ordered scale — so I wanted to see whether the calibration held up on conversational data rather than clean exam questions.</p>
+
+        <p>There is no good public B2B-sales benchmark, so I used the three closest public proxies and tried to be honest about what they are: pre-purchase product questions (Amazon QA), charity-solicitation dialogue (Persuasion for Good), and consumer price haggling (CraigslistBargain). Across them I ran five tasks spanning all three primitives, 500 held-out items each, against Claude Haiku 4.5 and a majority-class baseline on identical items.</p>
+
+        <div class="table-scroll">
+          <table class="results">
+            <caption>Customer/sales-style tasks (n = 500 test, seed 13). Accuracy with the majority-class baseline in parentheses, and ECE (expected calibration error, lower is better).</caption>
+            <thead>
+              <tr><th>Task</th><th>Majority</th><th>Claude Haiku 4.5</th><th class="jev">TypeSafe Jev</th><th>Haiku ECE</th><th>Jev ECE</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Amazon QA — yes/no (Noul)</td><td>73.0%</td><td>61.1%</td><td class="jev">62.8%</td><td>0.201</td><td>0.076</td></tr>
+              <tr><td>Persuasion — did they donate? (Noul)</td><td>54.0%</td><td>71.4%</td><td class="jev">71.2%</td><td>0.239</td><td>0.219</td></tr>
+              <tr><td>Persuasion — strategy, 18-way (Choice)</td><td>18.8%</td><td>40.7%</td><td class="jev">44.2%</td><td>0.445</td><td>0.245</td></tr>
+              <tr><td>Craigslist — reached a deal? (Noul)</td><td>77.6%</td><td>90.2%</td><td class="jev">91.8%</td><td>0.044</td><td>0.015</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>The headline is that Jev is statistically tied with Haiku on four of the five tasks and wins the eighteen-way strategy classification outright — but the more interesting column is the last two. On every task Jev's probabilities are better calibrated than the chat model's, sometimes by a wide margin. That is the whole point of a typed primitive: a confidence score is only useful if you can threshold on it, and Jev's deal-detection on Craigslist is 91.8% accurate with an expected calibration error of 0.015 — close to perfectly calibrated. On the fifth task, rating how close a negotiation is to closing, neither model has a categorical answer to grade against, so I correlated the score with the actual outcome; there Haiku edges ahead (Spearman 0.81 to 0.69).</p>
+
+        <p>Where Jev struggles is Amazon QA, where both models land below the majority-"yes" baseline. That task has thin context and noisy labels derived from free-text answers, and it is a fair reminder that none of this is magic. It is also worth repeating the obvious caveat loudly: none of these corpora is B2B sales. They are old, public, and possibly in every model's training data. I read them as directional evidence that a small typed classifier can hold its own on messy conversational text — not as a promise that the numbers carry over to a CRM.</p>
+
+<!-- ===== 08-takeaway ===== -->
         <h2>What I take away</h2>
 
         <p>None of this says frontier chat models are unnecessary — for open-ended generation they are indispensable. But a great deal of production NLP is not generation; it is classification, routing, extraction, and labeling. For that kind of work, this experiment is a reminder that a small, typed primitive can match frontier accuracy at a tiny fraction of the cost and latency, and without the fragility that comes from asking a chat model to behave like a classifier. It is worth paying frontier prices for open-ended reasoning — and worth not paying them to pick one of five options.</p>

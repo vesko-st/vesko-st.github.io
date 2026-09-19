@@ -1,0 +1,11 @@
+# What about customer or sales data?
+
+Multiple choice is one shape of problem, and the neat one. A lot of the work I actually care about is messier: yes/no questions, picking one label out of many, rating something on a scale — and, crucially, getting back a probability you can trust enough to act on. TypeSafe exposes exactly those as three primitives — Noul for yes/no, Choice for one-of-N, and Score for an ordered scale — so I wanted to see whether the calibration held up on conversational data rather than clean exam questions.
+
+There is no good public B2B-sales benchmark, so I used the three closest public proxies and tried to be honest about what they are: pre-purchase product questions (Amazon QA), charity-solicitation dialogue (Persuasion for Good), and consumer price haggling (CraigslistBargain). Across them I ran five tasks spanning all three primitives, 500 held-out items each, against Claude Haiku 4.5 and a majority-class baseline on identical items.
+
+[[TABLE:sales]]
+
+The headline is that Jev is statistically tied with Haiku on four of the five tasks and wins the eighteen-way strategy classification outright — but the more interesting column is the last two. On every task Jev's probabilities are better calibrated than the chat model's, sometimes by a wide margin. That is the whole point of a typed primitive: a confidence score is only useful if you can threshold on it, and Jev's deal-detection on Craigslist is 91.8% accurate with an expected calibration error of 0.015 — close to perfectly calibrated. On the fifth task, rating how close a negotiation is to closing, neither model has a categorical answer to grade against, so I correlated the score with the actual outcome; there Haiku edges ahead (Spearman 0.81 to 0.69).
+
+Where Jev struggles is Amazon QA, where both models land below the majority-"yes" baseline. That task has thin context and noisy labels derived from free-text answers, and it is a fair reminder that none of this is magic. It is also worth repeating the obvious caveat loudly: none of these corpora is B2B sales. They are old, public, and possibly in every model's training data. I read them as directional evidence that a small typed classifier can hold its own on messy conversational text — not as a promise that the numbers carry over to a CRM.
