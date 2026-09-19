@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Testing TypeSafe Jev on Text Understanding &mdash; Veselin Stoyanov</title>
+    <title>Testing TypeSafe Jev on Text Understanding — Veselin Stoyanov</title>
     <link rel="icon" type="image/x-icon" href="../favicon-32x32.png">
 
     <!-- Open Graph / Twitter cards for link previews -->
@@ -42,15 +42,11 @@
       .subtitle { font-size: 20px; color: var(--muted); font-weight: 400; line-height: 1.5; }
       .byline { font-size: 15px; color: var(--muted); margin-top: 16px; }
 
-      article { }
       article p { margin: 0 0 22px; }
       article > p:first-of-type { font-size: 19px; }
 
       h2 { font-size: 26px; font-weight: 650; color: var(--ink); letter-spacing: -0.01em;
         margin: 46px 0 16px; padding-left: 14px; border-left: 4px solid var(--accent); }
-
-      em { color: #33383e; }
-      strong { color: var(--ink); }
 
       figure { margin: 30px 0; }
       figure img { width: 100%; height: auto; border: 1px solid #e6e9ee; border-radius: 8px; }
@@ -64,19 +60,17 @@
       }
       pre.prompt .lbl { color: var(--accent); font-weight: 600; }
 
+      /* Plain, straightforward tables */
       .table-scroll { overflow-x: auto; margin: 24px 0 8px; }
       table.results { width: 100%; border-collapse: collapse; font-size: 16px; }
       table.results caption { caption-side: top; text-align: left; font-size: 15px;
-        color: var(--muted); margin-bottom: 10px; font-weight: 600; }
-      table.results th, table.results td { padding: 10px 16px; text-align: right;
-        border-bottom: 1px solid #eceff2; white-space: nowrap; }
+        color: var(--muted); margin-bottom: 10px; }
+      table.results th, table.results td { padding: 9px 16px; text-align: right;
+        border-bottom: 1px solid #e6e9ec; white-space: nowrap; }
       table.results th:first-child, table.results td:first-child { text-align: left; }
-      table.results thead th { background: var(--accent); color: #fff; font-weight: 600;
-        border-bottom: none; }
-      table.results tbody tr.jev { background: #e8f6ee; }
-      table.results tbody tr.jev td { font-weight: 700; }
-      table.results .best { font-weight: 700; }
-      table.results tr.grp td { border-top: 2px solid #dfe4e9; }
+      table.results thead th { font-weight: 600; border-bottom: 2px solid #c9ced4; }
+      table.results tbody tr:last-child td { border-bottom: 2px solid #c9ced4; }
+
       .tnote { font-size: 15px; color: var(--muted); margin: 8px 0 24px; }
 
       .cta { display: inline-block; margin-top: 8px; background: var(--accent); color: #fff;
@@ -97,7 +91,7 @@
   </head>
   <body>
     <div class="wrap">
-      <div class="topbar"><a href="../index.html">&larr; Veselin Stoyanov</a></div>
+      <div class="topbar"><a href="../index.html">← Veselin Stoyanov</a></div>
 
       <header class="post">
         <h1>Testing TypeSafe Jev on Text Understanding</h1>
@@ -107,43 +101,29 @@
       </header>
 
       <article>
-        <p>For most of my career, the workhorse of applied NLP was not a chatbot but a classifier
-          &mdash; a model trained to answer one narrow question and return a label. Frontier chat
-          models have become so capable, and so convenient, that it is now tempting to route every
-          task through them, including tasks that are, at their core, a choice among a handful of
-          options. I wanted to understand what that convenience really costs, and whether a small,
-          purpose-built classifier can still hold its own on accuracy.</p>
 
-        <p>The occasion was TypeSafe&rsquo;s System One primitives &mdash; compact models that take
-          some context and return a typed judgment rather than free text. Their <em>Choice</em>
-          primitive, which the team calls <strong>Jev</strong>, takes a passage and a question, is
-          given a set of options, and returns exactly one of them. That is precisely the shape of a
-          multiple-choice benchmark, so I set up a head-to-head against the current frontier Claude
-          models: Haiku&nbsp;4.5, Sonnet&nbsp;5, and Opus&nbsp;5.</p>
+<!-- ============================================================
+     SECTION: Intro
+     ============================================================ -->
+        <p>For most of my career, the workhorse of applied NLP was not a chatbot but a classifier — a model trained to answer one narrow question and return a label. Frontier chat models have become so capable, and so convenient, that it is now tempting to route every task through them, including tasks that are, at their core, a choice among a handful of options. I wanted to understand what that convenience really costs, and whether a small, purpose-built classifier can still hold its own on accuracy.</p>
 
-        <p>There is a wrinkle in any comparison like this: the public benchmarks we reach for by
-          default may already sit in the models&rsquo; pretraining data, and the headline numbers we
-          remember are often a generation out of date. So I did two things. First, I re-ran every
-          model myself under a single fixed protocol rather than trusting stale leaderboards. Second,
-          I added two hedges against contamination &mdash; MMLU-CF, an explicitly contamination-free
-          variant of MMLU, and a small corpus I wrote by hand over a single long article, which I
-          describe later.</p>
+        <p>The occasion was TypeSafe's System One primitives — compact models that take some context and return a typed judgment rather than free text. Their <em>Choice</em> primitive, which the team calls <strong>Jev</strong>, takes a passage and a question, is given a set of options, and returns exactly one of them. That is precisely the shape of a multiple-choice benchmark, so I set up a head-to-head against the current frontier Claude models: Haiku 4.5, Sonnet 5, and Opus 5.</p>
+
+        <p>There is a wrinkle in any comparison like this: the public benchmarks we reach for by default may already sit in the models' pretraining data, and the headline numbers we remember are often a generation out of date. So I did two things. First, I re-ran every model myself under a single fixed protocol rather than trusting stale leaderboards. Second, I added two hedges against contamination — MMLU-CF, an explicitly contamination-free variant of MMLU, and a small corpus I wrote by hand over a single long article, which I describe later.</p>
 
         <figure>
           <img src="results-card.png" alt="Summary: TypeSafe Jev vs Claude Haiku 4.5, Sonnet 5, Opus 5 across four multiple-choice benchmarks, with accuracy and cost.">
           <figcaption>A summary of the results. Cost is in USD per 1,000 long-context questions.</figcaption>
         </figure>
 
+<!-- ============================================================
+     SECTION: The setup
+     ============================================================ -->
         <h2>The setup</h2>
-        <p>I used four benchmarks: RACE-H (passage-grounded reading comprehension), CommonsenseQA
-          (commonsense knowledge), MMLU-CF (multi-domain knowledge, contamination-free), and my own
-          Grace-Coolidge corpus. For the three public benchmarks I sampled 100 items each with a
-          fixed seed, so every system sees identical questions.</p>
 
-        <p>The two systems answer the same question in different ways. Jev receives the passage and
-          question as its state and the options as its choice criteria, and returns one option.
-          Claude receives a plain-text prompt and is asked, through a system instruction, to reply
-          with only the answer letter:</p>
+        <p>I used four benchmarks: RACE-H (passage-grounded reading comprehension), CommonsenseQA (commonsense knowledge), MMLU-CF (multi-domain knowledge, contamination-free), and my own Grace-Coolidge corpus. For the three public benchmarks I sampled 100 items each with a fixed seed, so every system sees identical questions.</p>
+
+        <p>The two systems answer the same question in different ways. Jev receives the passage and question as its state and the options as its choice criteria, and returns one option. Claude receives a plain-text prompt and is asked, through a system instruction, to reply with only the answer letter:</p>
 
 <pre class="prompt"><span class="lbl">System:</span> You are answering a multiple-choice question. Respond with ONLY
 the single letter of the correct option (one of the provided labels)
@@ -157,14 +137,13 @@ C. adrenaline
 D. your
 E. sweater may produced</pre>
 
-        <p>To keep the comparison honest, I first ran Claude with <em>no reasoning</em> &mdash;
-          extended thinking disabled and the output capped to a single letter &mdash; since that is
-          the apples-to-apples setting for a classifier. I revisit what happens when reasoning is
-          switched on further down. Cost is metered from actual token usage and priced at published
-          rates (per million tokens: Jev at $0.042 input and free output; Haiku 1/5, Sonnet 2/10,
-          Opus 5/25 for input/output).</p>
+        <p>To keep the comparison honest, I first ran Claude with <em>no reasoning</em> — extended thinking disabled and the output capped to a single letter — since that is the apples-to-apples setting for a classifier. I revisit what happens when reasoning is switched on further down. Cost is metered from actual token usage and priced at published rates (per million tokens: Jev at $0.042 input and free output; Haiku 1/5, Sonnet 2/10, Opus 5/25 for input/output).</p>
 
+<!-- ============================================================
+     SECTION: Accuracy
+     ============================================================ -->
         <h2>Accuracy</h2>
+
         <div class="table-scroll">
           <table class="results">
             <caption>Accuracy by system and dataset (measured, n = 100, seed 42).</caption>
@@ -175,31 +154,29 @@ E. sweater may produced</pre>
               <tr><td>Claude Haiku 4.5</td><td>88.0%</td><td>64.0%</td><td>89.0%</td></tr>
               <tr><td>Claude Haiku 4.5 (low)</td><td>90.0%</td><td>74.0%</td><td>93.0%</td></tr>
               <tr><td>Claude Haiku 4.5 (medium)</td><td>90.0%</td><td>75.0%</td><td>94.0%</td></tr>
-              <tr class="grp"><td>Claude Sonnet 5</td><td>90.0%</td><td>73.0%</td><td>94.0%</td></tr>
+              <tr><td>Claude Sonnet 5</td><td>90.0%</td><td>73.0%</td><td>94.0%</td></tr>
               <tr><td>Claude Sonnet 5 (low)</td><td>87.0%</td><td>76.0%</td><td>96.0%</td></tr>
-              <tr><td>Claude Sonnet 5 (medium)</td><td>89.0%</td><td>79.0%</td><td class="best">97.0%</td></tr>
-              <tr class="grp"><td>Claude Opus 5</td><td>90.0%</td><td>79.0%</td><td>95.0%</td></tr>
-              <tr><td>Claude Opus 5 (low)</td><td class="best">95.0%</td><td class="best">84.0%</td><td>96.0%</td></tr>
+              <tr><td>Claude Sonnet 5 (medium)</td><td>89.0%</td><td>79.0%</td><td>97.0%</td></tr>
+              <tr><td>Claude Opus 5</td><td>90.0%</td><td>79.0%</td><td>95.0%</td></tr>
+              <tr><td>Claude Opus 5 (low)</td><td>95.0%</td><td>84.0%</td><td>96.0%</td></tr>
               <tr><td>Claude Opus 5 (medium)</td><td>93.0%</td><td>82.0%</td><td>96.0%</td></tr>
-              <tr class="jev grp"><td>TypeSafe Jev</td><td>91.0%</td><td>80.0%</td><td>95.0%</td></tr>
+              <tr><td>TypeSafe Jev</td><td>91.0%</td><td>80.0%</td><td>95.0%</td></tr>
             </tbody>
           </table>
         </div>
-        <p class="tnote">Reasoning tiers are shown together for completeness; the discussion below
-          starts with the no-reasoning rows.</p>
 
-        <p>Among the no-reasoning configurations, Jev is the strongest system on CommonsenseQA and on
-          the contamination-free MMLU-CF, and it ties Opus&nbsp;5 on RACE-H, where the leading
-          systems are already at the human ceiling. For a model this small, matching the frontier on
-          plain accuracy was more than I expected going in.</p>
+        <p>Among the no-reasoning configurations, Jev is the strongest system on CommonsenseQA and on the contamination-free MMLU-CF, and it ties Opus 5 on RACE-H, where the leading systems are already at the human ceiling. For a model this small, matching the frontier on plain accuracy was more than I expected going in.</p>
 
+<!-- ============================================================
+     SECTION: The cost of a correct answer
+     ============================================================ -->
         <h2>The cost of a correct answer</h2>
-        <p>Accuracy is only half the story. Jev bills for input tokens only and nothing for output,
-          whereas the chat models add five to twenty-five dollars per million output tokens on top of
-          costlier input.</p>
+
+        <p>Accuracy is only half the story. Jev bills for input tokens only and nothing for output, whereas the chat models add five to twenty-five dollars per million output tokens on top of costlier input.</p>
+
         <div class="table-scroll">
           <table class="results">
-            <caption>Cost in USD per 1,000 questions (metered tokens &times; published rates).</caption>
+            <caption>Cost in USD per 1,000 questions (metered tokens × published rates).</caption>
             <thead>
               <tr><th>System</th><th>CommonsenseQA</th><th>MMLU-CF</th><th>RACE-H</th></tr>
             </thead>
@@ -207,27 +184,26 @@ E. sweater may produced</pre>
               <tr><td>Claude Haiku 4.5</td><td>$0.109</td><td>$0.137</td><td>$0.506</td></tr>
               <tr><td>Claude Haiku 4.5 (low)</td><td>$1.345</td><td>$1.832</td><td>$2.317</td></tr>
               <tr><td>Claude Haiku 4.5 (medium)</td><td>$1.683</td><td>$2.464</td><td>$2.961</td></tr>
-              <tr class="grp"><td>Claude Sonnet 5</td><td>$0.263</td><td>$0.339</td><td>$1.334</td></tr>
+              <tr><td>Claude Sonnet 5</td><td>$0.263</td><td>$0.339</td><td>$1.334</td></tr>
               <tr><td>Claude Sonnet 5 (low)</td><td>$0.263</td><td>$0.443</td><td>$1.334</td></tr>
               <tr><td>Claude Sonnet 5 (medium)</td><td>$0.263</td><td>$0.417</td><td>$1.334</td></tr>
-              <tr class="grp"><td>Claude Opus 5</td><td>$0.658</td><td>$0.822</td><td>$3.335</td></tr>
+              <tr><td>Claude Opus 5</td><td>$0.658</td><td>$0.822</td><td>$3.335</td></tr>
               <tr><td>Claude Opus 5 (low)</td><td>$1.123</td><td>$1.544</td><td>$3.437</td></tr>
               <tr><td>Claude Opus 5 (medium)</td><td>$1.542</td><td>$2.140</td><td>$3.652</td></tr>
-              <tr class="jev grp"><td>TypeSafe Jev</td><td>$0.015</td><td>$0.016</td><td>$0.031</td></tr>
+              <tr><td>TypeSafe Jev</td><td>$0.015</td><td>$0.016</td><td>$0.031</td></tr>
             </tbody>
           </table>
         </div>
-        <p>On the short public benchmarks Jev is already forty to a hundred times cheaper than
-          Opus&nbsp;5. As the next section shows, that gap widens dramatically once the context grows.</p>
 
+        <p>On the short public benchmarks Jev is already forty to a hundred times cheaper than Opus 5. As the next section shows, that gap widens dramatically once the context grows.</p>
+
+<!-- ============================================================
+     SECTION: A benchmark nothing could have memorized
+     ============================================================ -->
         <h2>A benchmark nothing could have memorized</h2>
-        <p>To be sure I was not simply measuring memorized test items, I hand-authored a corpus of 40
-          questions over the full Wikipedia article on Grace Coolidge. The whole article &mdash; about
-          twenty thousand tokens &mdash; is supplied on every call, and every wrong option is a real
-          name or value drawn from the text, so a model has to read rather than recall. Twenty of the
-          questions are straightforward; the other twenty add negation, temporal ordering, and
-          inference, and several are deliberately unanswerable, with &ldquo;Not enough
-          information&rdquo; as the correct choice.</p>
+
+        <p>To be sure I was not simply measuring memorized test items, I hand-authored a corpus of 40 questions over the full Wikipedia article on Grace Coolidge. The whole article — about twenty thousand tokens — is supplied on every call, and every wrong option is a real name or value drawn from the text, so a model has to read rather than recall. Twenty of the questions are straightforward; the other twenty add negation, temporal ordering, and inference, and several are deliberately unanswerable, with "Not enough information" as the correct choice.</p>
+
         <div class="table-scroll">
           <table class="results">
             <caption>Grace-Coolidge (n = 40): accuracy, latency, and cost (~20k-token article per call).</caption>
@@ -238,51 +214,39 @@ E. sweater may produced</pre>
               <tr><td>Claude Haiku 4.5</td><td>70.0%</td><td>962 ms</td><td>$18.52</td></tr>
               <tr><td>Claude Haiku 4.5 (low)</td><td>90.0%</td><td>3007 ms</td><td>$19.79</td></tr>
               <tr><td>Claude Haiku 4.5 (medium)</td><td>90.0%</td><td>3431 ms</td><td>$20.00</td></tr>
-              <tr class="grp"><td>Claude Sonnet 5</td><td>87.5%</td><td>1548 ms</td><td>$51.88</td></tr>
+              <tr><td>Claude Sonnet 5</td><td>87.5%</td><td>1548 ms</td><td>$51.88</td></tr>
               <tr><td>Claude Sonnet 5 (low)</td><td>87.5%</td><td>1524 ms</td><td>$51.91</td></tr>
               <tr><td>Claude Sonnet 5 (medium)</td><td>85.0%</td><td>1472 ms</td><td>$51.90</td></tr>
-              <tr class="grp"><td>Claude Opus 5</td><td class="best">92.5%</td><td>2252 ms</td><td>$129.69</td></tr>
+              <tr><td>Claude Opus 5</td><td>92.5%</td><td>2252 ms</td><td>$129.69</td></tr>
               <tr><td>Claude Opus 5 (low)</td><td>90.0%</td><td>1960 ms</td><td>$129.95</td></tr>
               <tr><td>Claude Opus 5 (medium)</td><td>90.0%</td><td>2181 ms</td><td>$130.21</td></tr>
-              <tr class="jev grp"><td>TypeSafe Jev</td><td>90.0%</td><td>429 ms</td><td>$0.84</td></tr>
+              <tr><td>TypeSafe Jev</td><td>90.0%</td><td>429 ms</td><td>$0.84</td></tr>
             </tbody>
           </table>
         </div>
-        <p>Here the long context is the whole point, and it is where the economics become stark. Jev
-          answers at 90% accuracy &mdash; a single hard question behind the best Claude &mdash; for 84
-          cents per thousand questions, against roughly $130 for Opus&nbsp;5. That is about a hundred
-          and fifty times cheaper, at a tenth of the latency, because the twenty-thousand-token
-          article is billed once as input rather than paid for again on the output side.</p>
 
+        <p>Here the long context is the whole point, and it is where the economics become stark. Jev answers at 90% accuracy — a single hard question behind the best Claude — for 84 cents per thousand questions, against roughly $130 for Opus 5. That is about a hundred and fifty times cheaper, at a tenth of the latency, because the twenty-thousand-token article is billed once as input rather than paid for again on the output side.</p>
+
+<!-- ============================================================
+     SECTION: Does reasoning change the picture?
+     ============================================================ -->
         <h2>Does reasoning change the picture?</h2>
-        <p>The obvious objection is that I hobbled the chat models by disabling reasoning, so I ran
-          each of them again at <em>low</em> and <em>medium</em> reasoning effort (the extra rows in
-          the tables above). Reasoning helps most on the quantitative MMLU-CF questions &mdash; Opus
-          rises from 79% to 84%, Sonnet from 73% to 79% &mdash; and it is enough to let Opus edge
-          past Jev by a point or two on the public benchmarks. But the gains are small, and they are
-          not free: cost roughly doubles and latency stays around two seconds, an order of magnitude
-          slower than Jev.</p>
-        <p>On the long Grace-Coolidge article, reasoning does not help at all &mdash; Sonnet and Opus
-          stay flat or dip slightly &mdash; and because the article dominates the token bill, turning
-          it on barely changes the cost. The one clear benefit is that reasoning repairs a failure
-          mode of the no-reasoning setup: the smaller models sometimes begin working the problem in
-          their visible output and get truncated, and thinking gives them somewhere to do that work.
-          Jev never has this problem, because a <em>Choice</em> primitive returns a label by
-          construction.</p>
 
+        <p>The obvious objection is that I hobbled the chat models by disabling reasoning, so I ran each of them again at <em>low</em> and <em>medium</em> reasoning effort (the extra rows in the tables above). Reasoning helps most on the quantitative MMLU-CF questions — Opus rises from 79% to 84%, Sonnet from 73% to 79% — and it is enough to let Opus edge past Jev by a point or two on the public benchmarks. But the gains are small, and they are not free: cost roughly doubles and latency stays around two seconds, an order of magnitude slower than Jev.</p>
+
+        <p>On the long Grace-Coolidge article, reasoning does not help at all — Sonnet and Opus stay flat or dip slightly — and because the article dominates the token bill, turning it on barely changes the cost. The one clear benefit is that reasoning repairs a failure mode of the no-reasoning setup: the smaller models sometimes begin working the problem in their visible output and get truncated, and thinking gives them somewhere to do that work. Jev never has this problem, because a <em>Choice</em> primitive returns a label by construction.</p>
+
+<!-- ============================================================
+     SECTION: What I take away
+     ============================================================ -->
         <h2>What I take away</h2>
-        <p>None of this says frontier chat models are unnecessary &mdash; for open-ended generation
-          they are indispensable. But a great deal of production NLP is not generation; it is
-          classification, routing, extraction, and labeling. For that kind of work, this experiment
-          is a reminder that a small, typed primitive can match frontier accuracy at a tiny fraction
-          of the cost and latency, and without the fragility that comes from asking a chat model to
-          behave like a classifier. It is worth paying frontier prices for open-ended reasoning
-          &mdash; and worth not paying them to pick one of five options.</p>
+
+        <p>None of this says frontier chat models are unnecessary — for open-ended generation they are indispensable. But a great deal of production NLP is not generation; it is classification, routing, extraction, and labeling. For that kind of work, this experiment is a reminder that a small, typed primitive can match frontier accuracy at a tiny fraction of the cost and latency, and without the fragility that comes from asking a chat model to behave like a classifier. It is worth paying frontier prices for open-ended reasoning — and worth not paying them to pick one of five options.</p>
 
         <p><a class="cta" href="typesafe-jev-vs-claude.pdf">Read the full write-up (PDF)</a></p>
 
-        <footer class="post">All results were regenerated from a fixed-seed, reproducible harness;
-          accuracy, latency, and cost are measured, not quoted from leaderboards.</footer>
+        <footer class="post">All results were regenerated from a fixed-seed, reproducible harness; accuracy, latency, and cost are measured, not quoted from leaderboards.</footer>
+
       </article>
     </div>
   </body>
