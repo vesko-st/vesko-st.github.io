@@ -2,8 +2,8 @@
 
 I used four benchmarks: RACE-H (passage-grounded reading comprehension), CommonsenseQA (commonsense knowledge), MMLU-CF (multi-domain knowledge, contamination-free), and my own Grace-Coolidge corpus. For the three public benchmarks I sampled 100 items each with a fixed seed, so every system sees identical questions.
 
-The two systems answer the same question in different ways. Jev receives the passage and question as its state and the options as its choice criteria, and returns one option. Claude receives a plain-text prompt and is asked, through a system instruction, to reply with only the answer letter:
+The two systems answer the same question in different ways. Jev receives the passage and question as its state and the options as its choices, and returns one option. Claude receives a plain-text prompt and is asked, through a system instruction, to reply with only the answer letter:
 
 [[PROMPT]]
 
-To keep the comparison honest, I first ran Claude with _no reasoning_ — extended thinking disabled and the output capped to a single letter — since that is the apples-to-apples setting for a classifier. I revisit what happens when reasoning is switched on further down. Cost is metered from actual token usage and priced at published rates (per million tokens: Jev at $0.042 input and free output; Haiku 1/5, Sonnet 2/10, Opus 5/25 for input/output).
+To keep the comparison honest, I first ran Claude with _no reasoning_ — extended thinking disabled and the output capped to a single letter — since that is the apples-to-apples setting for a classifier. I revisit what happens when reasoning is switched on further down. Cost is metered from actual token usage and priced at published rates (per million tokens: Jev at $0.042 input and free output; Haiku $1/$5, Sonnet $2/$10, Opus $5/$25 for input/output).

@@ -4,4 +4,4 @@ Accuracy is only half the story. Jev bills for input tokens only and nothing for
 
 [[TABLE:cost]]
 
-On the short public benchmarks Jev is already forty to a hundred times cheaper than Opus 5. As the next section shows, that gap widens dramatically once the context grows.
+On the short public benchmarks Jev is already forty to a hundred times cheaper than Opus 5. The actual gap with Haiku is not as big (only an order of magnitude). As the next section shows, that gap widens dramatically once the context grows.

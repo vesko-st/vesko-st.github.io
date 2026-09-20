@@ -105,11 +105,11 @@
       <article>
 
 <!-- ===== 01-intro ===== -->
-        <p>For most of my career, the workhorse of applied NLP was not a chatbot but a classifier — a model trained to answer one narrow question and return a label. Frontier chat models have become so capable, and so convenient, that it is now tempting to route every task through them, including tasks that are, at their core, a choice among a handful of options. I wanted to understand what that convenience really costs, and whether a small, purpose-built classifier can still hold its own on accuracy.</p>
+        <p>For most of my career, the workhorse of applied NLP was not a chatbot but a classifier — a model trained to answer one narrow question and return a label. In fact, the first time I was really excited about models that understand language beyond word counting was when BERT came out and we developed RoBERTa. But generative LLMs became so capable and universal that we forgot about those simpler models. It is now tempting to route every task through an LLM, including tasks that are, at their core, a choice among a handful of options. This week <a href="https://typesafe.ai">TypeSafe</a>'s <a href="https://docs.typesafe.ai/models">Jev</a> brought back cheaper classifier models in a compelling way. I wanted to understand how far this model has come, and whether a small, purpose-built classifier can still hold its own on accuracy.</p>
 
-        <p>Lately everyone has been talking about Jev, and I wanted to put it through its paces. Jev is TypeSafe's System One <em>Choice</em> primitive — a compact model that takes a passage and a question, is given a set of options, and returns exactly one of them. That is precisely the shape of a multiple-choice benchmark, so I set up a head-to-head against the current frontier Claude models: Haiku 4.5, Sonnet 5, and Opus 5.</p>
+        <p>So I decided to put Jev through its paces. I wanted to understand how well Jev understands language as this is the foundation of understanding tasks and instructions. Jev is TypeSafe's System One <em>Choice</em> primitive — a compact model that takes a passage and a question, is given a set of options, and returns exactly one of them (technically a probability for each option). That is precisely the shape of a multiple-choice benchmark, so I set up a head-to-head against the current frontier Claude models: Haiku 4.5, Sonnet 5, and Opus 5.</p>
 
-        <p>There is a wrinkle in any comparison like this: the public benchmarks we reach for by default may already sit in the models' pretraining data, and the headline numbers we remember are often a generation out of date. So I did two things. First, I re-ran every model myself under a single fixed protocol rather than trusting stale leaderboards. Second, I added two hedges against contamination — MMLU-CF, an explicitly contamination-free variant of MMLU, and a small corpus I wrote by hand over a single long article, which I describe later.</p>
+        <p>There is a wrinkle in any comparison: the public benchmarks we reach for by default may already sit in the models' pretraining data, and the headline numbers we remember are often a generation out of date. So I did two things. First, I re-ran every model myself under a single fixed protocol rather than trusting stale leaderboards. Second, I added a hedge against contamination — a small corpus I wrote by hand over a single long article, which I describe later.</p>
 
         <figure>
           <img src="results-card.png" alt="Summary of results: TypeSafe Jev vs Claude Haiku 4.5, Sonnet 5, and Opus 5 across four multiple-choice benchmarks.">
@@ -121,7 +121,7 @@
 
         <p>I used four benchmarks: RACE-H (passage-grounded reading comprehension), CommonsenseQA (commonsense knowledge), MMLU-CF (multi-domain knowledge, contamination-free), and my own Grace-Coolidge corpus. For the three public benchmarks I sampled 100 items each with a fixed seed, so every system sees identical questions.</p>
 
-        <p>The two systems answer the same question in different ways. Jev receives the passage and question as its state and the options as its choice criteria, and returns one option. Claude receives a plain-text prompt and is asked, through a system instruction, to reply with only the answer letter:</p>
+        <p>The two systems answer the same question in different ways. Jev receives the passage and question as its state and the options as its choices, and returns one option. Claude receives a plain-text prompt and is asked, through a system instruction, to reply with only the answer letter:</p>
 
 <pre class="prompt"><span class="lbl">System:</span> You are answering a multiple-choice question. Respond with ONLY
 the single letter of the correct option (one of the provided labels)
@@ -135,7 +135,7 @@ C. adrenaline
 D. your
 E. sweater may produced</pre>
 
-        <p>To keep the comparison honest, I first ran Claude with <em>no reasoning</em> — extended thinking disabled and the output capped to a single letter — since that is the apples-to-apples setting for a classifier. I revisit what happens when reasoning is switched on further down. Cost is metered from actual token usage and priced at published rates (per million tokens: Jev at $0.042 input and free output; Haiku 1/5, Sonnet 2/10, Opus 5/25 for input/output).</p>
+        <p>To keep the comparison honest, I first ran Claude with <em>no reasoning</em> — extended thinking disabled and the output capped to a single letter — since that is the apples-to-apples setting for a classifier. I revisit what happens when reasoning is switched on further down. Cost is metered from actual token usage and priced at published rates (per million tokens: Jev at $0.042 input and free output; Haiku $1/$5, Sonnet $2/$10, Opus $5/$25 for input/output).</p>
 
 <!-- ===== 03-accuracy ===== -->
         <h2>Accuracy</h2>
@@ -163,6 +163,8 @@ E. sweater may produced</pre>
 
         <p>Among the no-reasoning configurations, Jev is the strongest system on CommonsenseQA and on the contamination-free MMLU-CF, and it ties Opus 5 on RACE-H, where the leading systems are already at the human ceiling. For a model this small, matching the frontier on plain accuracy was more than I expected going in.</p>
 
+        <p>One caveat before reading the no-reasoning numbers too literally: not all of the chat models' misses are wrong answers. Because the answer-only setup caps output at a single letter, a smaller model sometimes starts working the problem in its visible output and gets cut off before it commits to a letter — which scores as wrong even though it never picked an option. This never happens to Opus 5 and barely touches Sonnet 5 (three such non-answers across all four datasets), but it accounts for a real share of Haiku 4.5's misses: none on CommonsenseQA, but 19% of its MMLU-CF errors, 36% on RACE-H, and 58% on the long Grace-Coolidge article. So part of Haiku's no-reasoning gap — especially on long context — is format compliance rather than comprehension, and its numbers here are best read as a lower bound. That is exactly the failure enabling reasoning repairs, which is the next section. Jev has no equivalent failure mode: a <em>Choice</em> primitive always returns a label.</p>
+
 <!-- ===== 04-cost ===== -->
         <h2>The cost of a correct answer</h2>
 
@@ -189,12 +191,12 @@ E. sweater may produced</pre>
           </table>
         </div>
 
-        <p>On the short public benchmarks Jev is already forty to a hundred times cheaper than Opus 5. As the next section shows, that gap widens dramatically once the context grows.</p>
+        <p>On the short public benchmarks Jev is already forty to a hundred times cheaper than Opus 5. The actual gap with Haiku is not as big (only an order of magnitude). As the next section shows, that gap widens dramatically once the context grows.</p>
 
 <!-- ===== 05-grace-coolidge ===== -->
         <h2>A benchmark nothing could have memorized</h2>
 
-        <p>To be sure I was not simply measuring memorized test items, I hand-authored a corpus of 40 questions over the full Wikipedia article on Grace Coolidge. The whole article — about twenty thousand tokens — is supplied on every call, and every wrong option is a real name or value drawn from the text, so a model has to read rather than recall. Twenty of the questions are straightforward; the other twenty add negation, temporal ordering, and inference, and several are deliberately unanswerable, with "Not enough information" as the correct choice.</p>
+        <p>To be sure I was not simply measuring memorized test items, I hand-authored a corpus of 40 questions over Wikipedia's featured article of the day, which happened to be on <a href="https://en.wikipedia.org/wiki/Grace_Coolidge">Grace Coolidge</a>. The whole article — about twenty thousand tokens — is supplied on every call, and every wrong option is a real name or value drawn from the text, so a model has to read rather than recall. Twenty of the questions are straightforward; the other twenty add negation, temporal ordering, and inference, and several are deliberately unanswerable, with "Not enough information" as the correct choice.</p>
 
         <div class="table-scroll">
           <table class="results">
@@ -219,6 +221,8 @@ E. sweater may produced</pre>
 
         <p>Here the long context is the whole point, and it is where the economics become stark. Jev answers at 90% accuracy — a single hard question behind the best Claude — for 84 cents per thousand questions, against roughly $130 for Opus 5. That is about a hundred and fifty times cheaper, at a tenth of the latency, because the twenty-thousand-token article is billed once as input rather than paid for again on the output side.</p>
 
+        <p>This corpus is tiny and not systematically vetted, so the results are not really conclusive of which model is better, but it gives some assurance that Jev's performance is not a pure artifact of training data memorization.</p>
+
 <!-- ===== 06-reasoning ===== -->
         <h2>Does reasoning change the picture?</h2>
 
@@ -229,15 +233,17 @@ E. sweater may produced</pre>
 <!-- ===== 07-sales ===== -->
         <h2>What about customer or sales data?</h2>
 
-        <p>Multiple choice is one shape of problem, and the neat one. A lot of the work I actually care about is messier: yes/no questions, picking one label out of many, rating something on a scale — and, crucially, getting back a probability you can trust enough to act on. TypeSafe exposes exactly those as three primitives — Noul for yes/no, Choice for one-of-N, and Score for an ordered scale — so I wanted to see whether the calibration held up on conversational data rather than clean exam questions.</p>
+        <p>Going beyond academic text understanding, I wanted to test whether we can use Jev in the domain that <a href="https://lightfield.app">Lightfield</a> operates in: business data including customer and sales data. I wanted to see whether the results held up on conversational data rather than clean exam questions.</p>
 
-        <p>There is no good public B2B-sales benchmark, so I used the three closest public proxies and tried to be honest about what they are. Across them I ran five tasks spanning all three primitives, 500 held-out items each, against Claude Haiku 4.5, Claude Sonnet 5, and a majority-class baseline on identical items.</p>
+        <p>There is no good public B2B-sales benchmark, so I dug out three old-school public datasets, each with its own limitations but matching the domain. Across them I ran five tasks spanning all three primitives, 500 held-out items each, against Claude Haiku 4.5, Claude Sonnet 5, and a majority-class baseline on identical items.</p>
 
-        <p><strong>Amazon QA</strong> (McAuley, UCSD) is roughly 1.4 million real customer questions scraped from Amazon product pages across twenty-odd categories, about half of them yes/no with a Y/N answer derived from the human reply. I use the yes/no subset, hand Jev the product's title and description, and ask whether the true answer is "yes" — pre-purchase product Q&amp;A, the closest public thing to an inbound customer question.</p>
+        <p><strong>Amazon QA</strong> (<a href="https://cseweb.ucsd.edu/~jmcauley/pdfs/www16b.pdf">McAuley, UCSD</a>) is roughly 1.4 million real customer questions scraped from Amazon product pages across twenty-odd categories, about half of them yes/no with a Y/N answer derived from the human reply. I use the yes/no subset, hand Jev the product's title and description, and ask whether the true answer is "yes" — pre-purchase product Q&amp;A, the closest public thing to an inbound customer question.</p>
 
-        <p><strong>Persuasion for Good</strong> (Wang et al., 2019) is 1,017 crowdworker dialogues in which one person tries to talk another into donating to Save the Children; 300 of them are annotated at the utterance level with the persuasion strategy in play, and every dialogue records the donation that actually followed. I test both picking the strategy behind a single line (eighteen labels, taken from the data rather than the paper) and, over a whole conversation, whether the persuadee ended up giving.</p>
+        <p><strong>Persuasion for Good</strong> (<a href="https://aclanthology.org/P19-1566/">Wang et al., 2019</a>) is 1,017 crowdworker dialogues in which one person tries to talk another into donating to Save the Children; 300 of them are annotated at the utterance level with the persuasion strategy in play, and every dialogue records the donation that actually followed. I test both picking the strategy behind a single line (eighteen labels, taken from the data rather than the paper) and, over a whole conversation, whether the persuadee ended up giving.</p>
 
-        <p><strong>CraigslistBargain</strong> (He et al., 2018) is 6,682 buyer–seller negotiations over real Craigslist listings in six categories, each carrying a listing price, a private buyer target, and a recorded outcome — an agreed price or no deal. I strip the closing offer-and-accept turns and ask whether they reached a deal, then separately score how close the conversation came to one.</p>
+        <p><strong>CraigslistBargain</strong> (<a href="https://aclanthology.org/D18-1256/">He et al., 2018</a>) is 6,682 buyer–seller negotiations over real Craigslist listings in six categories, each carrying a listing price, a private buyer target, and a recorded outcome — an agreed price or no deal. I strip the closing offer-and-accept turns and ask whether they reached a deal, then separately score how close the conversation came to one.</p>
+
+        <p>Note: This is a fairly simple setup — the instructions can probably be better formulated to improve performance, but that would require "prompt engineering" in the style of what we were doing a couple of years ago.</p>
 
         <div class="table-scroll">
           <table class="results">
@@ -254,9 +260,9 @@ E. sweater may produced</pre>
           </table>
         </div>
 
-        <p>On bare accuracy the three systems land close together: Jev is within the confidence interval of both Claude models on four of the five tasks. Sonnet takes the two hardest — the eighteen-way strategy classification and Craigslist deal detection — while Jev edges Haiku on strategy and leads both on Amazon QA. The more interesting columns are the ECE ones. Jev's probabilities are far better calibrated than Haiku's on every task, and it beats even Sonnet on Amazon QA and on deal detection, which is 91.8% accurate with an expected calibration error of 0.015 — close to perfectly calibrated; Sonnet is marginally better calibrated on the two Persuasion tasks. That is the whole point of a typed primitive: a confidence score is only useful if you can threshold on it. On the fifth task, rating how close a negotiation is to closing, neither model has a categorical answer to grade against, so I correlated the score with the actual outcome; there both Claude models edge ahead (Spearman 0.84 for Sonnet and 0.81 for Haiku, to Jev's 0.69).</p>
+        <p>On bare accuracy the three systems land close together: Jev is within the confidence interval of both Claude models on four of the five tasks. Sonnet takes the two hardest — the eighteen-way strategy classification and Craigslist deal detection — while Jev edges Haiku on strategy and leads both on Amazon QA. The more interesting columns are the ECE ones. Jev's probabilities are far better calibrated than Haiku's on every task, and it beats Sonnet on Amazon QA and on deal detection, which is 91.8% accurate with an expected calibration error of 0.015 — close to perfectly calibrated; Sonnet is marginally better calibrated on the two Persuasion tasks. That is the whole point of a typed primitive: a confidence score is only useful if you can threshold on it. On the fifth task, rating how close a negotiation is to closing, neither model has a categorical answer to grade against, so I correlated the score with the actual outcome; there both Claude models edge ahead (Spearman 0.84 for Sonnet and 0.81 for Haiku, to Jev's 0.69).</p>
 
-        <p>A note on how confidence is measured, since the two systems report it differently and I wanted to compare them on fair ground. Jev returns a real probability from its own classifier head. Claude exposes no such probability for a yes/no or one-of-N judgment, so I asked it to state one — the JSON it returns carries a 0–1 confidence next to the answer. Verbalized confidence is a weaker signal than a trained one: chat models tend to report 0.9-plus almost regardless of whether they turn out to be right, so some of the ECE gap on the binary tasks is a difference in kind, not only in calibration quality. Every calibration number here uses each system's native or self-reported confidence.</p>
+        <p>A note on how confidence is measured, since the two systems report it differently and I wanted to compare them on fair ground. Jev returns a real probability from its own classifier head. Claude exposes no such probability for a yes/no or one-of-N judgment, so I asked it to state one — the JSON it returns carries a 0–1 confidence next to the answer. I was actually surprised how competitive the Claude models are on predicting probabilities in this way. Verbalized confidence is a weaker signal than a trained one: chat models tend to report 0.9-plus almost regardless of whether they turn out to be right, so some of the ECE gap on the binary tasks is a difference in kind, not only in calibration quality.</p>
 
         <p>Where Jev struggles is Amazon QA, where both models land below the majority-"yes" baseline. That task has thin context and noisy labels derived from free-text answers, and it is a fair reminder that none of this is magic. It is also worth repeating the obvious caveat loudly: none of these corpora is B2B sales. They are old, public, and possibly in every model's training data. I read them as directional evidence that a small typed classifier can hold its own on messy conversational text — not as a promise that the numbers carry over to a CRM.</p>
 
@@ -264,6 +270,10 @@ E. sweater may produced</pre>
         <h2>What I take away</h2>
 
         <p>None of this says frontier chat models are unnecessary — for open-ended generation they are indispensable. But a great deal of production NLP is not generation; it is classification, routing, extraction, and labeling. For that kind of work, this experiment is a reminder that a small, typed primitive can match frontier accuracy at a tiny fraction of the cost and latency, and without the fragility that comes from asking a chat model to behave like a classifier. It is worth paying frontier prices for open-ended reasoning — and worth not paying them to pick one of five options.</p>
+
+        <p>On the other hand, Jev has serious limitations. Unfortunately, its context window is small, only 32K tokens. The fact that it cannot generate text is limiting even for classification tasks — Jev cannot provide rationales or explanations for its answers. In the LLM world we have grown accustomed to the luxury of evidence in addition to a simple yes/no or top-scoring option.</p>
+
+        <p>At Lightfield we are incorporating Jev into our product. There are problems such as mail intelligence for which cost and latency have been a limitation, and Jev has made them possible. In fact, we believe that inexpensive classification models like Jev may be particularly useful as a tool for our intelligent agent that programs tasks to be performed over many items. More exciting details coming soon.</p>
 
         <p><a class="cta" href="typesafe-jev-vs-claude.pdf">Read the full write-up (PDF)</a></p>
 

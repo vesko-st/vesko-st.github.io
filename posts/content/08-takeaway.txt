@@ -2,4 +2,8 @@
 
 None of this says frontier chat models are unnecessary — for open-ended generation they are indispensable. But a great deal of production NLP is not generation; it is classification, routing, extraction, and labeling. For that kind of work, this experiment is a reminder that a small, typed primitive can match frontier accuracy at a tiny fraction of the cost and latency, and without the fragility that comes from asking a chat model to behave like a classifier. It is worth paying frontier prices for open-ended reasoning — and worth not paying them to pick one of five options.
 
+On the other hand, Jev has serious limitations. Unfortunately, its context window is small, only 32K tokens. The fact that it cannot generate text is limiting even for classification tasks — Jev cannot provide rationales or explanations for its answers. In the LLM world we have grown accustomed to the luxury of evidence in addition to a simple yes/no or top-scoring option.
+
+At Lightfield we are incorporating Jev into our product. There are problems such as mail intelligence for which cost and latency have been a limitation, and Jev has made them possible. In fact, we believe that inexpensive classification models like Jev may be particularly useful as a tool for our intelligent agent that programs tasks to be performed over many items. More exciting details coming soon.
+
 [[PDF]]

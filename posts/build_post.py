@@ -15,7 +15,7 @@ the prose files stay clean; drop a token on its own line to place an asset:
     [[TABLE:coolidge]]    Grace-Coolidge table
     [[PDF]]               the "read the full write-up" button
 
-Inline formatting in the prose files: **bold** and _italic_.
+Inline formatting in the prose files: **bold**, _italic_, and [links](https://url).
 """
 
 from __future__ import annotations
@@ -102,6 +102,7 @@ TABLES = {"accuracy": ACCURACY, "cost": COST, "coolidge": COOLIDGE, "sales": SAL
 # ── Rendering helpers ────────────────────────────────────────────────────────
 def inline(text: str) -> str:
     text = html.escape(text, quote=False)
+    text = re.sub(r"\[(.+?)\]\((.+?)\)", r'<a href="\2">\1</a>', text)
     text = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
     text = re.sub(r"_(.+?)_", r"<em>\1</em>", text)
     return text
