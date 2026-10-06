@@ -141,19 +141,19 @@
               <tr><th>Task</th><th>Training labels</th><th>RoBERTa, fine-tuned</th><th>Opus NL classifier</th></tr>
             </thead>
             <tbody>
-              <tr><td>Banking77 intents</td><td>9,792</td><td>91.1%</td><td>91.9%</td></tr>
-              <tr><td>Banking77 routing</td><td>9,792</td><td>96.8%</td><td>97.5%</td></tr>
-              <tr><td>Hate speech</td><td>1,000</td><td>0.780</td><td>0.823</td></tr>
-              <tr><td>Persuasion strategy</td><td>1,002</td><td>0.582</td><td>0.616</td></tr>
-              <tr><td>Donation outcome</td><td>500</td><td>0.675</td><td>0.680</td></tr>
-              <tr><td>Deal reached</td><td>4,947</td><td>0.889</td><td>0.896</td></tr>
+              <tr><td>Banking77 intents</td><td>9,792</td><td>91.1</td><td><strong>91.9</strong></td></tr>
+              <tr><td>Banking77 routing</td><td>9,792</td><td>96.8</td><td><strong>97.5</strong></td></tr>
+              <tr><td>Hate speech</td><td>1,000</td><td>78.0</td><td><strong>82.3</strong></td></tr>
+              <tr><td>Persuasion strategy</td><td>1,002</td><td>58.2</td><td><strong>61.6</strong></td></tr>
+              <tr><td>Donation outcome</td><td>500</td><td>67.5</td><td><strong>68.0</strong></td></tr>
+              <tr><td>Deal reached</td><td>4,947</td><td>88.9</td><td><strong>89.6</strong></td></tr>
             </tbody>
           </table>
         </div>
 
-        <p class="table-note">Test scores: accuracy for the Banking77 tasks, macro-F1 for the rest. One run per cell.</p>
+        <p class="table-note">Test scores: accuracy for the Banking77 tasks, macro-F1 for the rest, both on a 0–100 scale. One run per cell.</p>
 
-        <p>The NL classifier matches or beats the fine-tuned encoder on all six tasks, by 0.03 to 0.04 macro-F1 on hate speech and persuasion and by less than a point elsewhere, which we read as parity. It is not the state of the art: published full fine-tuning on Banking77 intents reaches 94.1%. But it gets with specialized classifiers. Donation outcome is the odd one out: neither system beats a zero-shot classifier (0.733), because whether someone ends up donating is barely predictable from the conversation.</p>
+        <p>The NL classifier matches or beats the fine-tuned encoder on all six tasks, by 3.4 to 4.3 points on hate speech and persuasion and by less than a point elsewhere, which we read as parity. It is not the state of the art: published full fine-tuning on Banking77 intents reaches 94.1. But it gets with specialized classifiers. Donation outcome is the odd one out: neither system beats a zero-shot classifier (73.3), because whether someone ends up donating is barely predictable from the conversation.</p>
 
         <h2>Without labels: active learning with the user</h2>
 
@@ -165,19 +165,19 @@
               <tr><th>Task</th><th>Zero-shot</th><th>Opus, 100 points</th><th>Opus, all labels</th></tr>
             </thead>
             <tbody>
-              <tr><td>Banking77 intents</td><td>80.2%</td><td>86.8%</td><td>91.9%</td></tr>
-              <tr><td>Banking77 routing</td><td>73.7%</td><td>90.5%</td><td>97.5%</td></tr>
-              <tr><td>Hate speech</td><td>0.741</td><td>0.804</td><td>0.823</td></tr>
-              <tr><td>Persuasion strategy</td><td>0.455</td><td>0.603</td><td>0.616</td></tr>
-              <tr><td>Donation outcome</td><td>0.733</td><td>0.720</td><td>0.680</td></tr>
-              <tr><td>Deal reached</td><td>0.889</td><td>0.871</td><td>0.896</td></tr>
+              <tr><td>Banking77 intents</td><td>80.2</td><td>86.8</td><td><strong>91.9</strong></td></tr>
+              <tr><td>Banking77 routing</td><td>73.7</td><td>90.5</td><td><strong>97.5</strong></td></tr>
+              <tr><td>Hate speech</td><td>74.1</td><td>80.4</td><td><strong>82.3</strong></td></tr>
+              <tr><td>Persuasion strategy</td><td>45.5</td><td>60.3</td><td><strong>61.6</strong></td></tr>
+              <tr><td>Donation outcome</td><td><strong>73.3</strong></td><td>72.0</td><td>68.0</td></tr>
+              <tr><td>Deal reached</td><td>88.9</td><td>87.1</td><td><strong>89.6</strong></td></tr>
             </tbody>
           </table>
         </div>
 
         <p class="table-note">Zero-shot is a Jev classifier built from the class names and description alone. The 100-point column averages 3 to 15 runs per task, across strategies.</p>
 
-        <p>Wherever the user has something to teach, about 50 labels' worth of their time beats zero-shot by a wide margin: 6.6 points on intents, 16.8 on routing, 0.06 macro-F1 on hate speech and 0.15 on persuasion. On hate speech and persuasion, the budgeted classifiers even beat RoBERTa fine-tuned on twenty times as many labels (0.804 against 0.780, and 0.603 against 0.582). On donation and deal, zero-shot is already at the ceiling and there is nothing to learn.</p>
+        <p>Wherever the user has something to teach, about 50 labels' worth of their time beats zero-shot by a wide margin: 6.6 points on intents, 16.8 on routing, 6.3 on hate speech and 14.8 on persuasion. On hate speech and persuasion, the budgeted classifiers even beat RoBERTa fine-tuned on twenty times as many labels (80.4 against 78.0, and 60.3 against 58.2). On donation and deal, zero-shot is already at the ceiling and there is nothing to learn.</p>
 
         <h3>Active-learning strategies</h3>
 
@@ -199,20 +199,20 @@
               <tr><th>Strategy</th><th>Intents</th><th>Routing</th><th>Hate speech</th><th>Persuasion</th><th>Donation</th><th>Deal</th></tr>
             </thead>
             <tbody>
-              <tr><td>Free</td><td>—</td><td>92.6%</td><td>—</td><td>0.604</td><td>0.700</td><td>0.897</td></tr>
-              <tr><td>Uncertainty</td><td><strong>87.9%</strong></td><td>87.4%</td><td>0.751</td><td>0.585</td><td><strong>0.734</strong></td><td>0.890</td></tr>
-              <tr><td>Uncertainty + rules</td><td>87.4%</td><td>88.9%</td><td>0.790</td><td>0.570</td><td>0.732</td><td><strong>0.908</strong></td></tr>
-              <tr><td>Policy first</td><td>85.1%</td><td>91.3%</td><td><strong>0.813</strong></td><td><strong>0.607</strong></td><td>0.733</td><td>0.832</td></tr>
-              <tr><td>Policy, labels first</td><td>—</td><td>92.4%</td><td>0.795</td><td>0.549</td><td>0.699</td><td>0.827</td></tr>
-              <tr><td>Interview</td><td>85.9%</td><td>89.7%</td><td>0.791</td><td>0.590</td><td>0.720</td><td>0.870</td></tr>
-              <tr><td>Interview, lean</td><td>86.4%</td><td><strong>93.0%</strong></td><td>0.791</td><td>0.584</td><td>0.722</td><td>0.868</td></tr>
+              <tr><td>Free</td><td>—</td><td>92.6</td><td>—</td><td>60.4</td><td>70.0</td><td>89.7</td></tr>
+              <tr><td>Uncertainty</td><td><strong>87.9</strong></td><td>87.4</td><td>75.1</td><td>58.5</td><td><strong>73.4</strong></td><td>89.0</td></tr>
+              <tr><td>Uncertainty + rules</td><td>87.4</td><td>88.9</td><td>79.0</td><td>57.0</td><td>73.2</td><td><strong>90.8</strong></td></tr>
+              <tr><td>Policy first</td><td>85.1</td><td>91.3</td><td><strong>81.3</strong></td><td><strong>60.7</strong></td><td>73.3</td><td>83.2</td></tr>
+              <tr><td>Policy, labels first</td><td>—</td><td>92.4</td><td>79.5</td><td>54.9</td><td>69.9</td><td>82.7</td></tr>
+              <tr><td>Interview</td><td>85.9</td><td>89.7</td><td>79.1</td><td>59.0</td><td>72.0</td><td>87.0</td></tr>
+              <tr><td>Interview, lean</td><td>86.4</td><td><strong>93.0</strong></td><td>79.1</td><td>58.4</td><td>72.2</td><td>86.8</td></tr>
             </tbody>
           </table>
         </div>
 
         <p class="table-note">Opus builders, 100 points, test set. All routing cells, both interview rows, and several intents and hate speech cells average two or three runs; the rest are single runs.</p>
 
-        <p>The best strategy depends on where the missing knowledge lives. On Banking77 intents, whose meaning is in the text, uncertainty sampling works best, and spending a third of the budget on questions costs 2.8 points. On hate speech, where the labels follow a policy the builder cannot infer (hate against women and immigrants only), the order reverses: asking about the policy first reaches 0.813, against 0.751 for uncertainty sampling. On routing, where the mapping of intents to teams is private, uncertainty sampling is the worst choice: a counter-intuitive assignment sends a whole intent to the wrong team with confidence, so its records never look uncertain. The lean interview does best there: one message of questions about the routing rules took the first draft from about 81% to 88–91%, and the runs finished at 93.0% on average. Piling more steps into the procedure did not help: the full interview scored below the best strategy on every task, because its fixed allowances left too few labels for what the builder actually needed to learn. On persuasion, where the builder already knows the annotation scheme, and on donation and deal, where nothing much is left to learn, the strategies differ less than repeated runs of the same one.</p>
+        <p>The best strategy depends on where the missing knowledge lives. On Banking77 intents, whose meaning is in the text, uncertainty sampling works best, and spending a third of the budget on questions costs 2.8 points. On hate speech, where the labels follow a policy the builder cannot infer (hate against women and immigrants only), the order reverses: asking about the policy first reaches 81.3, against 75.1 for uncertainty sampling. On routing, where the mapping of intents to teams is private, uncertainty sampling is the worst choice: a counter-intuitive assignment sends a whole intent to the wrong team with confidence, so its records never look uncertain. The lean interview does best there: one message of questions about the routing rules took the first draft from about 81 to 88–91, and the runs finished at 93.0 on average. Piling more steps into the procedure did not help: the full interview scored below the best strategy on every task, because its fixed allowances left too few labels for what the builder actually needed to learn. On persuasion, where the builder already knows the annotation scheme, and on donation and deal, where nothing much is left to learn, the strategies differ less than repeated runs of the same one.</p>
 
         <h2>What the classifiers learn</h2>
 
@@ -242,7 +242,7 @@
 
         <p>Comparing the budgeted classifiers with the ones built from every label, we expected the extra labels to buy a different kind of classifier. They did not: the shapes are the same. What differs is what the definitions contain. With a budget, builders paste the labels they bought into the definition: one persuasion classifier has a field on every option called "labelled examples of messages tagged this way", filled with real lines from the data, typos included ("So would you like to throw these wonderful kills a buck ?"). With every label, builders copy almost nothing and describe patterns instead, because no handful of examples is representative of a thousand records. An example only describes itself, and the classifier will never see that record again at test time.</p>
 
-        <p>So we told budgeted builders that labels are evidence for rules and never part of the classifier: state what a mislabelled record shares with its class as a rule about meaning, test the rule on other records, and keep it only if it holds beyond the record that prompted it. Across ten matched runs, the rules-only classifiers contained no pool text, against up to 56 pasted records in the baselines, and scored level or slightly higher. The gains were where the baseline had pasted most: persuasion strategy rose from 0.585 to 0.615, and deal reached from 0.890 to 0.904. These are single runs, so we read them as "examples are not needed" rather than "rules are reliably better".</p>
+        <p>So we told budgeted builders that labels are evidence for rules and never part of the classifier: state what a mislabelled record shares with its class as a rule about meaning, test the rule on other records, and keep it only if it holds beyond the record that prompted it. Across ten matched runs, the rules-only classifiers contained no pool text, against up to 56 pasted records in the baselines, and scored level or slightly higher. The gains were where the baseline had pasted most: persuasion strategy rose from 58.5 to 61.5, and deal reached from 89.0 to 90.4. These are single runs, so we read them as "examples are not needed" rather than "rules are reliably better".</p>
 
         <p>The resulting definitions read like an annotation guide. The persuasion builder, for instance, found that questions about the partner's own giving count as personal inquiries, the opposite of what its baseline had decided, and it dropped a hypothesis that moved 13 records on the strength of a single label.</p>
 
