@@ -1,5 +1,5 @@
 ---
-title: Agents That Build Their Own Classifiers
+title: The Role of Jev-Style Classifiers in Modern Agentic Systems
 subtitle: An agent can build and maintain the fast classifiers that do its repetitive work. Given labels, its natural-language classifiers rival fine-tuning; without them, it can interview the user instead.
 byline: Veselin Stoyanov
 og_desc: Agents can build natural-language classifiers that rival fine-tuned models, and build good ones from a small budget of the user's time when no labels exist.
