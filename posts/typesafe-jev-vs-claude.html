@@ -10,11 +10,11 @@
     <meta property="og:type" content="article">
     <meta property="og:title" content="Testing TypeSafe Jev on Text Understanding">
     <meta property="og:description" content="Can a small, purpose-built classifier keep up with frontier chat models on reading and knowledge tasks? A reproducible, contamination-aware comparison of TypeSafe Jev against Claude Haiku 4.5, Sonnet 5, and Opus 5.">
-    <meta property="og:image" content="https://vesstoyanov.com/posts/results-card.png">
     <meta property="og:url" content="https://vesstoyanov.com/posts/typesafe-jev-vs-claude.html">
-    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Testing TypeSafe Jev on Text Understanding">
     <meta name="twitter:description" content="A small typed classifier matches frontier Claude on multiple-choice accuracy at a fraction of the cost and latency.">
+    <meta property="og:image" content="https://vesstoyanov.com/posts/results-card.png">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content="https://vesstoyanov.com/posts/results-card.png">
 
     <style>
@@ -72,6 +72,12 @@
       /* Highlight the TypeSafe Jev row (MC tables) or column (sales table). */
       table.results tr.jev td, table.results tr.jev th,
       table.results td.jev, table.results thead th.jev { background: var(--jev); font-weight: 600; }
+
+      h3 { font-size: 21px; font-weight: 650; color: var(--ink); margin: 34px 0 12px; }
+      article ul { margin: 0 0 22px; padding-left: 24px; }
+      article li { margin-bottom: 8px; }
+      .table-scroll + p.table-note { margin-top: -14px; }
+      p.table-note { font-size: 14px; line-height: 1.6; color: var(--muted); }
 
       .cta { display: inline-block; margin-top: 8px; background: var(--accent); color: #fff;
         padding: 11px 20px; border-radius: 8px; font-weight: 600; font-size: 16px; }

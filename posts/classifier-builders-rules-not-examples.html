@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Agents That Build Their Own Classifiers — Veselin Stoyanov</title>
+    <link rel="icon" type="image/x-icon" href="../favicon-32x32.png">
+
+    <!-- Open Graph / Twitter cards for link previews -->
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Agents That Build Their Own Classifiers">
+    <meta property="og:description" content="Agents can build natural-language classifiers that rival fine-tuned models, and build good ones from a small budget of the user&#x27;s time when no labels exist.">
+    <meta property="og:url" content="https://vesstoyanov.com/posts/classifier-builders-rules-not-examples.html">
+    <meta name="twitter:title" content="Agents That Build Their Own Classifiers">
+    <meta name="twitter:description" content="Agents can build their own fast classifiers, rivalling fine-tuning with labels and interviewing the user without them.">
+    <meta name="twitter:card" content="summary">
+
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      :root { --accent: #2a7ab5; --accent-dark: #1a5a8a; --ink: #24292f; --muted: #6a737d; --rule: #333a42; --jev: #eaf3fb; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+          Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
+        font-size: 18px; line-height: 1.75; color: var(--ink); background: #fff;
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { color: var(--accent-dark); text-decoration: underline; }
+
+      .wrap { max-width: 940px; margin: 0 auto; padding: 24px 28px 80px; }
+
+      .topbar { margin: 6px 0 30px; font-size: 15px; }
+      .topbar a { color: var(--accent); font-weight: 500; }
+      .topbar a:hover { text-decoration: none; }
+
+      header.post { border-bottom: 3px solid var(--accent); padding-bottom: 22px; margin-bottom: 34px; }
+      h1 { font-size: 40px; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em;
+        color: var(--ink); margin-bottom: 14px; }
+      .subtitle { font-size: 20px; color: var(--muted); font-weight: 400; line-height: 1.5; }
+      .byline { font-size: 15px; color: var(--muted); margin-top: 16px; }
+
+      article p { margin: 0 0 22px; }
+      article > p:first-of-type { font-size: 19px; }
+
+      h2 { font-size: 26px; font-weight: 650; color: var(--ink); letter-spacing: -0.01em;
+        margin: 46px 0 16px; padding-left: 14px; border-left: 4px solid var(--accent); }
+
+      figure { margin: 30px 0; }
+      figure img { width: 100%; height: auto; border: 1px solid #e6e9ee; border-radius: 8px; }
+      figcaption { font-size: 14px; color: var(--muted); margin-top: 10px; text-align: center; }
+
+      pre.prompt {
+        background: #f6f8fa; border: 1px solid #e4e8ec; border-radius: 8px;
+        padding: 18px 20px; overflow-x: auto; font-size: 14px; line-height: 1.55;
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+        color: #2b3138; margin: 8px 0 26px; white-space: pre;
+      }
+      pre.prompt .lbl { color: var(--accent); font-weight: 600; }
+
+      /* Plain tables, PDF/booktabs style: horizontal rules only */
+      .table-scroll { overflow-x: auto; margin: 24px 0 26px; }
+      table.results { width: 100%; border-collapse: collapse; font-size: 16px;
+        border-top: 2px solid var(--rule); border-bottom: 2px solid var(--rule); }
+      table.results caption { caption-side: top; text-align: left; font-size: 15px;
+        color: var(--muted); margin-bottom: 12px; }
+      table.results th, table.results td { padding: 8px 18px; text-align: right; }
+      table.results th:first-child, table.results td:first-child { text-align: left; }
+      table.results thead th { font-weight: 600; border-bottom: 1px solid var(--rule); }
+      /* Highlight the TypeSafe Jev row (MC tables) or column (sales table). */
+      table.results tr.jev td, table.results tr.jev th,
+      table.results td.jev, table.results thead th.jev { background: var(--jev); font-weight: 600; }
+
+      h3 { font-size: 21px; font-weight: 650; color: var(--ink); margin: 34px 0 12px; }
+      article ul { margin: 0 0 22px; padding-left: 24px; }
+      article li { margin-bottom: 8px; }
+      .table-scroll + p.table-note { margin-top: -14px; }
+      p.table-note { font-size: 14px; line-height: 1.6; color: var(--muted); }
+
+      .cta { display: inline-block; margin-top: 8px; background: var(--accent); color: #fff;
+        padding: 11px 20px; border-radius: 8px; font-weight: 600; font-size: 16px; }
+      .cta:hover { background: var(--accent-dark); color: #fff; text-decoration: none; }
+
+      footer.post { margin-top: 46px; padding-top: 22px; border-top: 1px solid #eceff2;
+        font-size: 14px; color: var(--muted); }
+
+      @media (max-width: 640px) {
+        body { font-size: 17px; }
+        .wrap { padding: 16px 18px 56px; }
+        h1 { font-size: 30px; }
+        .subtitle { font-size: 18px; }
+        h2 { font-size: 22px; }
+      }
+    </style>
+    <!-- Analytics: GoatCounter (cookieless). -->
+    <script data-goatcounter="https://vesstoyanov.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="topbar"><a href="../index.html">← Veselin Stoyanov</a></div>
+
+      <header class="post">
+        <h1>Agents That Build Their Own Classifiers</h1>
+        <p class="subtitle">An agent can build and maintain the fast classifiers that do its repetitive work. Given labels, its natural-language classifiers rival fine-tuning; without them, it can interview the user instead.</p>
+        <p class="byline">Veselin Stoyanov</p>
+      </header>
+
+      <article>
+
+        <p>When <a href="https://typesafe.ai">TypeSafe</a> released <a href="https://docs.typesafe.ai/models">Jev</a> last month, it caught the imagination of those of us building with AI. Classifiers are not new, but in a world of highly capable language models we forgot that classifiers can be fast, cheap and useful. There is a good reason we were so quick to forget them: traditional classifiers are a pain to train, monitor, update and keep in sync with the rest of the system. But what if we could get the best of both worlds: an intelligent system that works in natural language, learns and adapts, and still performs its tasks quickly and cheaply? In other words, can an agent take over the painful part, and build and maintain the classifiers that do its high-volume, repetitive work?</p>
+
+        <p>TypeSafe calls Jev its <a href="https://docs.typesafe.ai/concepts/system-one">first System One model</a>, after the fast, intuitive mode of thinking in Daniel Kahneman's <em><a href="https://en.wikipedia.org/wiki/Thinking,_Fast_and_Slow">Thinking, Fast and Slow</a></em>. In Kahneman's account, a task first takes the slow, deliberate effort of System 2; with practice, System 1 learns to do it quickly and automatically, while System 2 keeps watch and steps in when it errs. Most agentic systems today never make that hand-off: one frontier model plans, calls tools, and also makes every repetitive judgement, such as routing a message or deciding whether an email needs a reply, one item at a time. That is expensive, slow, and not always consistent. We would rather have the agent act as System 2: it works out how a task should be done, then builds, checks and updates a fast classifier that takes the task over as its System 1. A traditional classifier, trained by tuning its parameters, could play that role, but its decision rule lives in its weights, so changing it means relabelling and retraining. A <em>natural-language</em> (NL) classifier is a set of instructions and option descriptions that Jev answers, so the agent (and the user) can read and edit it like a document.</p>
+
+        <p>Can agents build and use NL classifiers effectively? We set out to answer this question empirically. We find that given the same labelled data, capable models build NL classifiers that rival and outperform strong fine-tuned baselines. And when no labelled data is available, agents can still build effective classifiers by spending a small budget of the user's time on labels and questions. We devise and test several active-learning strategies for spending that budget, deciding which records to label and what to ask the user, and the best of them produce classifiers close in accuracy to their supervised counterparts.</p>
+
+        <h2>The setup</h2>
+
+        <p>The agent (Claude Opus) plays a classifier builder working for a user who needs a classifier. It gets a short task description, the list of classes, and about 1,000 unlabelled records. In the main setting it has a budget of 100 points of the user's time: a label costs 2 points, and a question about the definition costs 2, 5 or 10 points depending on how much it asks. A run that spends everything on labels gets about 50 of them. To establish a ceiling, we also give the builder every available training label and no budget. In both settings, we then use Jev to classify a hidden test set and measure the results.</p>
+
+        <p>We used six classical ML tasks, chosen so that what the builder has to learn sits in different places:</p>
+
+        <ul>
+          <li><strong>Banking77 intents</strong>: 77 intents of customer messages to a bank. The definition is mostly in the text.</li>
+          <li><strong>Banking77 routing</strong>: the same messages, routed to 6 teams by a private mapping the builder has to discover.</li>
+          <li><strong>Hate speech</strong> (<a href="https://aclanthology.org/S19-2007/">HatEval</a>): tweets labelled under an annotation policy nobody wrote down for the builder.</li>
+          <li><strong>Persuasion strategy</strong> (<a href="https://aclanthology.org/P19-1566/">Persuasion for Good</a>): which of 18 strategies a persuader's message uses.</li>
+          <li><strong>Donation outcome</strong>: from the same dialogues, whether the persuadee ended up giving.</li>
+          <li><strong>Deal reached</strong> (<a href="https://aclanthology.org/D18-1256/">CraigslistBargain</a>): whether a negotiation ended in a deal, with the closing offer removed.</li>
+        </ul>
+
+        <p>The builder can shape the classifier however it wants. In practice it almost always ends up with a multiple-choice question whose options are finer than the classes and mapped back onto them, often three differently worded copies averaged together as an ensemble.</p>
+
+        <h2>With labels: as good as fine-tuning</h2>
+
+        <p>First, the supervised case. We gave the Opus builder every training label and compared its NL classifier with RoBERTa fine-tuned on the same labels.</p>
+
+        <div class="table-scroll">
+          <table class="results">
+            <thead>
+              <tr><th>Task</th><th>Training labels</th><th>RoBERTa, fine-tuned</th><th>Opus NL classifier</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Banking77 intents</td><td>9,792</td><td>91.1%</td><td>91.9%</td></tr>
+              <tr><td>Banking77 routing</td><td>9,792</td><td>96.8%</td><td>97.5%</td></tr>
+              <tr><td>Hate speech</td><td>1,000</td><td>0.780</td><td>0.823</td></tr>
+              <tr><td>Persuasion strategy</td><td>1,002</td><td>0.582</td><td>0.616</td></tr>
+              <tr><td>Donation outcome</td><td>500</td><td>0.675</td><td>0.680</td></tr>
+              <tr><td>Deal reached</td><td>4,947</td><td>0.889</td><td>0.896</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="table-note">Test scores: accuracy for the Banking77 tasks, macro-F1 for the rest. One run per cell.</p>
+
+        <p>The NL classifier matches or beats the fine-tuned encoder on all six tasks, by 0.03 to 0.04 macro-F1 on hate speech and persuasion and by less than a point elsewhere, which we read as parity. It is not the state of the art: published full fine-tuning on Banking77 intents reaches 94.1%. But it gets with specialized classifiers. Donation outcome is the odd one out: neither system beats a zero-shot classifier (0.733), because whether someone ends up donating is barely predictable from the conversation.</p>
+
+        <h2>Without labels: active learning with the user</h2>
+
+        <p>The more common case for an agent is that no labelled data exists. Here the builder starts from the description and the unlabelled pool and spends its 100 points.</p>
+
+        <div class="table-scroll">
+          <table class="results">
+            <thead>
+              <tr><th>Task</th><th>Zero-shot</th><th>Opus, 100 points</th><th>Opus, all labels</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Banking77 intents</td><td>80.2%</td><td>86.8%</td><td>91.9%</td></tr>
+              <tr><td>Banking77 routing</td><td>73.7%</td><td>90.5%</td><td>97.5%</td></tr>
+              <tr><td>Hate speech</td><td>0.741</td><td>0.804</td><td>0.823</td></tr>
+              <tr><td>Persuasion strategy</td><td>0.455</td><td>0.603</td><td>0.616</td></tr>
+              <tr><td>Donation outcome</td><td>0.733</td><td>0.720</td><td>0.680</td></tr>
+              <tr><td>Deal reached</td><td>0.889</td><td>0.871</td><td>0.896</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="table-note">Zero-shot is a Jev classifier built from the class names and description alone. The 100-point column averages 3 to 15 runs per task, across strategies.</p>
+
+        <p>Wherever the user has something to teach, about 50 labels' worth of their time beats zero-shot by a wide margin: 6.6 points on intents, 16.8 on routing, 0.06 macro-F1 on hate speech and 0.15 on persuasion. On hate speech and persuasion, the budgeted classifiers even beat RoBERTa fine-tuned on twenty times as many labels (0.804 against 0.780, and 0.603 against 0.582). On donation and deal, zero-shot is already at the ceiling and there is nothing to learn.</p>
+
+        <h3>Active-learning strategies</h3>
+
+        <p>How the agent spends the budget matters, so we devised a set of strategies, each a one-page instruction that tells the builder which records to label, when to ask the user, and when to keep a revision:</p>
+
+        <ul>
+          <li><strong>Free</strong>: the builder decides for itself.</li>
+          <li><strong>Uncertainty</strong>: label the records the classifier is least sure about, in small batches, revising after each.</li>
+          <li><strong>Uncertainty + rules</strong>: the same, but turn errors into general rules, and check any rule that moves many records with a label on one of them before trusting it.</li>
+          <li><strong>Policy first</strong>: ask the user about the main policy decisions, build a classifier that mirrors the answers, then calibrate it with labels.</li>
+          <li><strong>Policy, labels first</strong>: check the draft against random labels before asking about edge cases, so that labels can overrule the user's answers.</li>
+          <li><strong>Interview</strong>: read the pool, ask about what the text cannot settle, label records spread over every option, then refine at the boundary, with a check set and a test for every rule.</li>
+          <li><strong>Interview, lean</strong>: read the pool, which is free, ask only about what the text cannot settle, and spend the rest on whatever labels the builder needs.</li>
+        </ul>
+
+        <div class="table-scroll">
+          <table class="results">
+            <thead>
+              <tr><th>Strategy</th><th>Intents</th><th>Routing</th><th>Hate speech</th><th>Persuasion</th><th>Donation</th><th>Deal</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Free</td><td>—</td><td>92.6%</td><td>—</td><td>0.604</td><td>0.700</td><td>0.897</td></tr>
+              <tr><td>Uncertainty</td><td><strong>87.9%</strong></td><td>87.4%</td><td>0.751</td><td>0.585</td><td><strong>0.734</strong></td><td>0.890</td></tr>
+              <tr><td>Uncertainty + rules</td><td>87.4%</td><td>88.9%</td><td>0.790</td><td>0.570</td><td>0.732</td><td><strong>0.908</strong></td></tr>
+              <tr><td>Policy first</td><td>85.1%</td><td>91.3%</td><td><strong>0.813</strong></td><td><strong>0.607</strong></td><td>0.733</td><td>0.832</td></tr>
+              <tr><td>Policy, labels first</td><td>—</td><td>92.4%</td><td>0.795</td><td>0.549</td><td>0.699</td><td>0.827</td></tr>
+              <tr><td>Interview</td><td>85.9%</td><td>89.7%</td><td>0.791</td><td>0.590</td><td>0.720</td><td>0.870</td></tr>
+              <tr><td>Interview, lean</td><td>86.4%</td><td><strong>93.0%</strong></td><td>0.791</td><td>0.584</td><td>0.722</td><td>0.868</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="table-note">Opus builders, 100 points, test set. All routing cells, both interview rows, and several intents and hate speech cells average two or three runs; the rest are single runs.</p>
+
+        <p>The best strategy depends on where the missing knowledge lives. On Banking77 intents, whose meaning is in the text, uncertainty sampling works best, and spending a third of the budget on questions costs 2.8 points. On hate speech, where the labels follow a policy the builder cannot infer (hate against women and immigrants only), the order reverses: asking about the policy first reaches 0.813, against 0.751 for uncertainty sampling. On routing, where the mapping of intents to teams is private, uncertainty sampling is the worst choice: a counter-intuitive assignment sends a whole intent to the wrong team with confidence, so its records never look uncertain. The lean interview does best there: one message of questions about the routing rules took the first draft from about 81% to 88–91%, and the runs finished at 93.0% on average. Piling more steps into the procedure did not help: the full interview scored below the best strategy on every task, because its fixed allowances left too few labels for what the builder actually needed to learn. On persuasion, where the builder already knows the annotation scheme, and on donation and deal, where nothing much is left to learn, the strategies differ less than repeated runs of the same one.</p>
+
+        <h2>What the classifiers learn</h2>
+
+        <p>The finished classifiers are compact, readable definitions. Counting the rules in each (the sentences and list items of its instructions and option descriptions) gives a picture of what the builder wrote:</p>
+
+        <div class="table-scroll">
+          <table class="results">
+            <thead>
+              <tr><th>Task</th><th>Classes</th><th>Options</th><th>Rules</th><th>Exclusion rules</th><th>Words</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Banking77 intents</td><td>77</td><td>77 (77)</td><td>117 (181)</td><td>38 (51)</td><td>1,892 (2,413)</td></tr>
+              <tr><td>Banking77 routing</td><td>6</td><td>77 (93)</td><td>87 (117)</td><td>22 (15)</td><td>896 (969)</td></tr>
+              <tr><td>Hate speech</td><td>2</td><td>12 (13)</td><td>22 (26)</td><td>4 (8)</td><td>500 (505)</td></tr>
+              <tr><td>Persuasion strategy</td><td>18</td><td>23 (18)</td><td>36 (24)</td><td>8 (1)</td><td>896 (553)</td></tr>
+              <tr><td>Donation outcome</td><td>2</td><td>8 (10)</td><td>16 (18)</td><td>6 (6)</td><td>317 (293)</td></tr>
+              <tr><td>Deal reached</td><td>2</td><td>8 (5)</td><td>16 (9)</td><td>6 (4)</td><td>402 (161)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="table-note">Medians over the final classifiers of all budgeted Opus runs (every strategy, 10 to 23 runs per task); in brackets, the single classifier Opus built from all labels. Counts are for one member of the ensemble, as members are rewordings of each other. Exclusion rules are those that say what does not belong ("not", "rather than", "unless", "except").</p>
+
+        <p>Three things stand out. The builders almost always ask for finer distinctions than the task does: binary tasks get 8 to 12 options, and routing's 6 teams are reached through the 77 intents, each mapped to its team. A good share of the rules, a fifth to a third, are exclusions that mark a boundary with a neighbouring option, which is where the classifier's errors are. And the definitions stay short: a few hundred words for a binary task, under 2,000 for 77 intents, so that a person can read the whole classifier in a few minutes. Ten to two hundred times as many labels do not make a classifier much bigger: from all labels, Opus wrote more rules on the Banking77 tasks and fewer on the conversation tasks, where budgeted builders padded their definitions with the records they had bought (more on that below). Building them is visible too: the builders that logged their reasoning wrote 580 hypotheses across 46 runs (a median of 10 per run), and dropped roughly one in six of them after testing them on the pool.</p>
+
+        <h2>A smaller finding: rules, not examples</h2>
+
+        <p>Comparing the budgeted classifiers with the ones built from every label, we expected the extra labels to buy a different kind of classifier. They did not: the shapes are the same. What differs is what the definitions contain. With a budget, builders paste the labels they bought into the definition: one persuasion classifier has a field on every option called "labelled examples of messages tagged this way", filled with real lines from the data, typos included ("So would you like to throw these wonderful kills a buck ?"). With every label, builders copy almost nothing and describe patterns instead, because no handful of examples is representative of a thousand records. An example only describes itself, and the classifier will never see that record again at test time.</p>
+
+        <p>So we told budgeted builders that labels are evidence for rules and never part of the classifier: state what a mislabelled record shares with its class as a rule about meaning, test the rule on other records, and keep it only if it holds beyond the record that prompted it. Across ten matched runs, the rules-only classifiers contained no pool text, against up to 56 pasted records in the baselines, and scored level or slightly higher. The gains were where the baseline had pasted most: persuasion strategy rose from 0.585 to 0.615, and deal reached from 0.890 to 0.904. These are single runs, so we read them as "examples are not needed" rather than "rules are reliably better".</p>
+
+        <p>The resulting definitions read like an annotation guide. The persuasion builder, for instance, found that questions about the partner's own giving count as personal inquiries, the opposite of what its baseline had decided, and it dropped a hypothesis that moved 13 records on the strength of a single label.</p>
+
+        <h2>What we take away</h2>
+
+        <p>The main answer to the question we started with is yes: an agent can build accurate classifiers on its own. Given the same labels, an Opus builder matches or beats RoBERTa fine-tuned on them on all six tasks. With no labelled data and a budget of about 50 labels' worth of the user's time, it beats zero-shot wherever the user has something to teach, and on two tasks it beats an encoder fine-tuned on twenty times as many labels. And because the classifier is written in plain language, it can be read, audited and changed in one place when the policy changes.</p>
+
+        <p>We are releasing the recipes we use: the builder skill, the labelling and questioning strategies, and the tools that go with them, at [LINK]. This is also how we are bringing Jev into <a href="https://lightfield.app">Lightfield</a>: rather than hand-building classifiers, our agent builds and maintains them from a description and a few answers from the user, and Jev runs them over many items quickly and cheaply.</p>
+
+
+
+      </article>
+    </div>
+  </body>
+</html>

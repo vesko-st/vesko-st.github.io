@@ -218,12 +218,10 @@ TEMPLATE = """<!doctype html>
     <meta property="og:type" content="article">
     <meta property="og:title" content="{title}">
     <meta property="og:description" content="{og_desc}">
-    <meta property="og:image" content="https://vesstoyanov.com/posts/results-card.png">
-    <meta property="og:url" content="https://vesstoyanov.com/posts/typesafe-jev-vs-claude.html">
-    <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:url" content="https://vesstoyanov.com/posts/{page}">
     <meta name="twitter:title" content="{title}">
     <meta name="twitter:description" content="{twitter_desc}">
-    <meta name="twitter:image" content="https://vesstoyanov.com/posts/results-card.png">
+{social_image}
 
     <style>
       *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
@@ -281,6 +279,12 @@ TEMPLATE = """<!doctype html>
       table.results tr.jev td, table.results tr.jev th,
       table.results td.jev, table.results thead th.jev {{ background: var(--jev); font-weight: 600; }}
 
+      h3 {{ font-size: 21px; font-weight: 650; color: var(--ink); margin: 34px 0 12px; }}
+      article ul {{ margin: 0 0 22px; padding-left: 24px; }}
+      article li {{ margin-bottom: 8px; }}
+      .table-scroll + p.table-note {{ margin-top: -14px; }}
+      p.table-note {{ font-size: 14px; line-height: 1.6; color: var(--muted); }}
+
       .cta {{ display: inline-block; margin-top: 8px; background: var(--accent); color: #fff;
         padding: 11px 20px; border-radius: 8px; font-weight: 600; font-size: 16px; }}
       .cta:hover {{ background: var(--accent-dark); color: #fff; text-decoration: none; }}
@@ -314,13 +318,27 @@ TEMPLATE = """<!doctype html>
 
 {body}
 
-        <footer class="post">{footer}</footer>
+{footer}
 
       </article>
     </div>
   </body>
 </html>
 """
+
+
+def social_image(url: str | None) -> str:
+    if not url:
+        return '    <meta name="twitter:card" content="summary">'
+    return (
+        f'    <meta property="og:image" content="{url}">\n'
+        '    <meta name="twitter:card" content="summary_large_image">\n'
+        f'    <meta name="twitter:image" content="{url}">'
+    )
+
+
+def footer(text_html: str) -> str:
+    return f'        <footer class="post">{text_html}</footer>' if text_html else ""
 
 
 def main() -> None:
@@ -337,7 +355,9 @@ def main() -> None:
         byline=inline(meta["byline"]),
         og_desc=meta["og_desc"],
         twitter_desc=meta["twitter_desc"],
-        footer=inline(meta["footer"]),
+        footer=footer(inline(meta["footer"])),
+        page=OUT.name,
+        social_image=social_image("https://vesstoyanov.com/posts/results-card.png"),
         body=body,
     )
     OUT.write_text(out)
