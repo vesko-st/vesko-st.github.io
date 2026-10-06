@@ -77,19 +77,19 @@ How the agent spends the budget matters, so we devised a set of strategies, each
 - **Interview**: read the pool, ask about what the text cannot settle, label records spread over every option, then refine at the boundary, with a check set and a test for every rule.
 - **Interview, lean**: read the pool, which is free, ask only about what the text cannot settle, and spend the rest on whatever labels the builder needs.
 
-| Strategy             | Intents  | Routing  | Hate speech | Persuasion | Donation | Deal     |
-| -------------------- | -------- | -------- | ----------- | ---------- | -------- | -------- |
-| Free                 | —        | 92.6     | —           | 60.4       | 70.0     | 89.7     |
-| Uncertainty          | **87.9** | 87.4     | 75.1        | 58.5       | **73.4** | 89.0     |
-| Uncertainty + rules  | 87.4     | 88.9     | 79.0        | 57.0       | 73.2     | **90.8** |
-| Policy first         | 85.1     | 91.3     | **81.3**    | **60.7**   | 73.3     | 83.2     |
-| Policy, labels first | —        | 92.4     | 79.5        | 54.9       | 69.9     | 82.7     |
-| Interview            | 85.9     | 89.7     | 79.1        | 59.0       | 72.0     | 87.0     |
-| Interview, lean      | 86.4     | **93.0** | 79.1        | 58.4       | 72.2     | 86.8     |
+| Strategy             | Intents  | Routing  | Hate speech | Persuasion | Donation | Deal     | Gap closed |
+| -------------------- | -------- | -------- | ----------- | ---------- | -------- | -------- | ---------- |
+| Free                 | 86.3     | 92.6     | 79.0        | 60.4       | 70.0     | 89.7     | 71%        |
+| Uncertainty          | **87.9** | 87.4     | 75.1        | 58.5       | **73.4** | 89.0     | 54%        |
+| Uncertainty + rules  | 87.4     | 88.9     | 79.0        | 57.0       | 73.2     | **90.8** | 64%        |
+| Policy first         | 85.1     | 91.3     | **81.3**    | **60.7**   | 73.3     | 83.2     | **75%**    |
+| Policy, labels first | 86.2     | 92.4     | 79.5        | 54.9       | 69.9     | 82.7     | 64%        |
+| Interview            | 85.9     | 89.7     | 79.1        | 59.0       | 72.0     | 87.0     | 65%        |
+| Interview, lean      | 86.4     | **93.0** | 79.1        | 58.4       | 72.2     | 86.8     | 69%        |
 
-*Opus builders, 100 points, test set. All routing cells, both interview rows, and several intents and hate speech cells average two or three runs; the rest are single runs.*
+*Opus builders, 100 points, test set. All routing cells, both interview rows, and most intents and hate speech cells average two or three runs; the rest are single runs. Gap closed is the share of the distance from zero-shot to the all-labels classifier that a strategy covers, averaged over intents, routing, hate speech and persuasion; on donation and deal, zero-shot is already at or above all labels, so there is no gap to close.*
 
-The best strategy depends on where the missing knowledge lives. On Banking77 intents, whose meaning is in the text, uncertainty sampling works best, and spending a third of the budget on questions costs 2.8 points. On hate speech, where the labels follow a policy the builder cannot infer (hate against women and immigrants only), the order reverses: asking about the policy first reaches 81.3, against 75.1 for uncertainty sampling. On routing, where the mapping of intents to teams is private, uncertainty sampling is the worst choice: a counter-intuitive assignment sends a whole intent to the wrong team with confidence, so its records never look uncertain. The lean interview does best there: one message of questions about the routing rules took the first draft from about 81 to 88–91, and the runs finished at 93.0 on average. Piling more steps into the procedure did not help: the full interview scored below the best strategy on every task, because its fixed allowances left too few labels for what the builder actually needed to learn. On persuasion, where the builder already knows the annotation scheme, and on donation and deal, where nothing much is left to learn, the strategies differ less than repeated runs of the same one.
+The best strategy depends on where the missing knowledge lives. On Banking77 intents, whose meaning is in the text, uncertainty sampling works best, and spending a third of the budget on questions costs 2.8 points. On hate speech, where the labels follow a policy the builder cannot infer (hate against women and immigrants only), the order reverses: asking about the policy first reaches 81.3, against 75.1 for uncertainty sampling. On routing, where the mapping of intents to teams is private, uncertainty sampling is the worst choice: a counter-intuitive assignment sends a whole intent to the wrong team with confidence, so its records never look uncertain. The lean interview does best there: one message of questions about the routing rules took the first draft from about 81 to 88–91, and the runs finished at 93.0 on average. Piling more steps into the procedure did not help: the full interview scored below the best strategy on every task, because its fixed allowances left too few labels for what the builder actually needed to learn. On persuasion, where the builder already knows the annotation scheme, and on donation and deal, where nothing much is left to learn, the strategies differ less than repeated runs of the same one. Averaged over the tasks with something to learn, policy first closes the most of the gap to all labels (75%), ahead of free (71%) and the lean interview (69%), but no strategy is best everywhere.
 
 # What the classifiers learn
 

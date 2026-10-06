@@ -196,23 +196,23 @@
         <div class="table-scroll">
           <table class="results">
             <thead>
-              <tr><th>Strategy</th><th>Intents</th><th>Routing</th><th>Hate speech</th><th>Persuasion</th><th>Donation</th><th>Deal</th></tr>
+              <tr><th>Strategy</th><th>Intents</th><th>Routing</th><th>Hate speech</th><th>Persuasion</th><th>Donation</th><th>Deal</th><th>Gap closed</th></tr>
             </thead>
             <tbody>
-              <tr><td>Free</td><td>—</td><td>92.6</td><td>—</td><td>60.4</td><td>70.0</td><td>89.7</td></tr>
-              <tr><td>Uncertainty</td><td><strong>87.9</strong></td><td>87.4</td><td>75.1</td><td>58.5</td><td><strong>73.4</strong></td><td>89.0</td></tr>
-              <tr><td>Uncertainty + rules</td><td>87.4</td><td>88.9</td><td>79.0</td><td>57.0</td><td>73.2</td><td><strong>90.8</strong></td></tr>
-              <tr><td>Policy first</td><td>85.1</td><td>91.3</td><td><strong>81.3</strong></td><td><strong>60.7</strong></td><td>73.3</td><td>83.2</td></tr>
-              <tr><td>Policy, labels first</td><td>—</td><td>92.4</td><td>79.5</td><td>54.9</td><td>69.9</td><td>82.7</td></tr>
-              <tr><td>Interview</td><td>85.9</td><td>89.7</td><td>79.1</td><td>59.0</td><td>72.0</td><td>87.0</td></tr>
-              <tr><td>Interview, lean</td><td>86.4</td><td><strong>93.0</strong></td><td>79.1</td><td>58.4</td><td>72.2</td><td>86.8</td></tr>
+              <tr><td>Free</td><td>86.3</td><td>92.6</td><td>79.0</td><td>60.4</td><td>70.0</td><td>89.7</td><td>71%</td></tr>
+              <tr><td>Uncertainty</td><td><strong>87.9</strong></td><td>87.4</td><td>75.1</td><td>58.5</td><td><strong>73.4</strong></td><td>89.0</td><td>54%</td></tr>
+              <tr><td>Uncertainty + rules</td><td>87.4</td><td>88.9</td><td>79.0</td><td>57.0</td><td>73.2</td><td><strong>90.8</strong></td><td>64%</td></tr>
+              <tr><td>Policy first</td><td>85.1</td><td>91.3</td><td><strong>81.3</strong></td><td><strong>60.7</strong></td><td>73.3</td><td>83.2</td><td><strong>75%</strong></td></tr>
+              <tr><td>Policy, labels first</td><td>86.2</td><td>92.4</td><td>79.5</td><td>54.9</td><td>69.9</td><td>82.7</td><td>64%</td></tr>
+              <tr><td>Interview</td><td>85.9</td><td>89.7</td><td>79.1</td><td>59.0</td><td>72.0</td><td>87.0</td><td>65%</td></tr>
+              <tr><td>Interview, lean</td><td>86.4</td><td><strong>93.0</strong></td><td>79.1</td><td>58.4</td><td>72.2</td><td>86.8</td><td>69%</td></tr>
             </tbody>
           </table>
         </div>
 
-        <p class="table-note">Opus builders, 100 points, test set. All routing cells, both interview rows, and several intents and hate speech cells average two or three runs; the rest are single runs.</p>
+        <p class="table-note">Opus builders, 100 points, test set. All routing cells, both interview rows, and most intents and hate speech cells average two or three runs; the rest are single runs. Gap closed is the share of the distance from zero-shot to the all-labels classifier that a strategy covers, averaged over intents, routing, hate speech and persuasion; on donation and deal, zero-shot is already at or above all labels, so there is no gap to close.</p>
 
-        <p>The best strategy depends on where the missing knowledge lives. On Banking77 intents, whose meaning is in the text, uncertainty sampling works best, and spending a third of the budget on questions costs 2.8 points. On hate speech, where the labels follow a policy the builder cannot infer (hate against women and immigrants only), the order reverses: asking about the policy first reaches 81.3, against 75.1 for uncertainty sampling. On routing, where the mapping of intents to teams is private, uncertainty sampling is the worst choice: a counter-intuitive assignment sends a whole intent to the wrong team with confidence, so its records never look uncertain. The lean interview does best there: one message of questions about the routing rules took the first draft from about 81 to 88–91, and the runs finished at 93.0 on average. Piling more steps into the procedure did not help: the full interview scored below the best strategy on every task, because its fixed allowances left too few labels for what the builder actually needed to learn. On persuasion, where the builder already knows the annotation scheme, and on donation and deal, where nothing much is left to learn, the strategies differ less than repeated runs of the same one.</p>
+        <p>The best strategy depends on where the missing knowledge lives. On Banking77 intents, whose meaning is in the text, uncertainty sampling works best, and spending a third of the budget on questions costs 2.8 points. On hate speech, where the labels follow a policy the builder cannot infer (hate against women and immigrants only), the order reverses: asking about the policy first reaches 81.3, against 75.1 for uncertainty sampling. On routing, where the mapping of intents to teams is private, uncertainty sampling is the worst choice: a counter-intuitive assignment sends a whole intent to the wrong team with confidence, so its records never look uncertain. The lean interview does best there: one message of questions about the routing rules took the first draft from about 81 to 88–91, and the runs finished at 93.0 on average. Piling more steps into the procedure did not help: the full interview scored below the best strategy on every task, because its fixed allowances left too few labels for what the builder actually needed to learn. On persuasion, where the builder already knows the annotation scheme, and on donation and deal, where nothing much is left to learn, the strategies differ less than repeated runs of the same one. Averaged over the tasks with something to learn, policy first closes the most of the gap to all labels (75%), ahead of free (71%) and the lean interview (69%), but no strategy is best everywhere.</p>
 
         <h2>What the classifiers learn</h2>
 
