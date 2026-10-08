@@ -14,7 +14,7 @@ Can agents build and use NL classifiers effectively? We set out to answer this q
 
 # The setup
 
-The agent (Claude Opus) plays a classifier builder working for a user who needs a classifier. It gets a short task description, the list of classes, and about 1,000 unlabelled records. In the main setting it has a budget of 100 points of the user's time: a label costs 2 points, and a question about the definition costs 2, 5 or 10 points depending on how much it asks. A run that spends everything on labels gets about 50 of them. To establish a ceiling, we also give the builder every available training label and no budget. In both settings, we then use Jev to classify a hidden test set and measure the results.
+The agent (Claude Opus) plays a classifier builder working for a user who needs a classifier. It gets a short task description, the list of classes, and about 1,000 unlabelled records. In the main setting it has a budget of 100 points of the user's time: a label costs 2 points, and a question about the definition costs 2, 5 or 10 points depending on how much it asks. A run that spends everything on labels gets about 50 of them. The user is simulated by another Claude Opus, which holds the gold labels and a private note, written beforehand from all of them, on how the labels apply the annotation policy. To establish a ceiling, we also give the builder every available training label and no budget. In both settings, we then use Jev to classify a hidden test set and measure the results.
 
 We used six classical ML tasks, chosen so that what the builder has to learn sits in different places:
 
@@ -54,16 +54,16 @@ The more common case for an agent is that no labelled data exists. Here the buil
 | Task                | Zero-shot | Opus, 100 points | Opus, all labels |
 | ------------------- | --------- | ---------------- | ---------------- |
 | Banking77 intents   | 80.2      | 86.8             | **91.9**         |
-| Banking77 routing   | 73.7      | 90.5             | **97.5**         |
-| Hate speech         | 74.1      | 80.4             | **82.3**         |
+| Banking77 routing   | 73.7      | 91.3             | **97.5**         |
+| Hate speech         | 74.1      | 78.9             | **82.3**         |
 | Persuasion strategy | 45.5      | 60.3             | **61.6**         |
-| Donation outcome    | **73.3**  | 72.0             | 68.0             |
-| Deal reached        | 88.9      | 87.1             | **89.6**         |
+| Donation outcome    | **73.3**  | 71.6             | 68.0             |
+| Deal reached        | 88.9      | 88.9             | **89.6**         |
 
 
 *Zero-shot is a Jev classifier built from the class names and description alone. The 100-point column averages 3 to 15 runs per task, across strategies.*
 
-Wherever the user has something to teach, about 50 labels' worth of their time beats zero-shot by a wide margin: 6.6 points on intents, 16.8 on routing, 6.3 on hate speech and 14.8 on persuasion. On hate speech and persuasion, the budgeted classifiers even beat RoBERTa fine-tuned on twenty times as many labels (80.4 against 78.0, and 60.3 against 58.2). On donation and deal, zero-shot is already at the ceiling and there is nothing to learn.
+Wherever the user has something to teach, about 50 labels' worth of their time beats zero-shot by a wide margin: 6.6 points on intents, 17.6 on routing, 4.8 on hate speech and 14.8 on persuasion. On hate speech and persuasion, the budgeted classifiers even beat RoBERTa fine-tuned on twenty times as many labels (78.9 against 78.0, and 60.3 against 58.2). On donation and deal, zero-shot is already at the ceiling and there is nothing to learn.
 
 ## Active-learning strategies
 
@@ -74,22 +74,22 @@ How the agent spends the budget matters, so we devised a set of strategies, each
 - **Uncertainty + rules**: the same, but turn errors into general rules, and check any rule that moves many records with a label on one of them before trusting it.
 - **Policy first**: ask the user about the main policy decisions, build a classifier that mirrors the answers, then calibrate it with labels.
 - **Policy, labels first**: check the draft against random labels before asking about edge cases, so that labels can overrule the user's answers.
-- **Interview**: read the pool, ask about what the text cannot settle, label records spread over every option, then refine at the boundary, with a check set and a test for every rule.
 - **Interview, lean**: read the pool, which is free, ask only about what the text cannot settle, and spend the rest on whatever labels the builder needs.
 
 | Strategy             | Intents  | Routing  | Hate speech | Persuasion | Donation | Deal     | Gap closed |
 | -------------------- | -------- | -------- | ----------- | ---------- | -------- | -------- | ---------- |
-| Free                 | 86.3     | 92.6     | 79.0        | 60.4       | 70.0     | 89.7     | 71%        |
+| Free                 | 86.3     | 92.8     | 79.9        | **60.6**   | 70.6     | 87.3     | 74%        |
 | Uncertainty          | **87.9** | 87.4     | 75.1        | 58.5       | **73.4** | 89.0     | 54%        |
-| Uncertainty + rules  | 87.4     | 88.9     | 79.0        | 57.0       | 73.2     | **90.8** | 64%        |
-| Policy first         | 85.1     | 91.3     | **81.3**    | **60.7**   | 73.3     | 83.2     | **75%**    |
-| Policy, labels first | 86.2     | 92.4     | 79.5        | 54.9       | 69.9     | 82.7     | 64%        |
-| Interview            | 85.9     | 89.7     | 79.1        | 59.0       | 72.0     | 87.0     | 65%        |
-| Interview, lean      | 86.4     | **93.0** | 79.1        | 58.4       | 72.2     | 86.8     | 69%        |
+| Uncertainty + rules  | 87.4     | 88.9     | **80.7**    | **60.6**   | 73.3     | **90.8** | **75%**    |
+| Policy first         | 86.2     | 93.4     | 78.9        | 60.3       | 69.3     | 88.5     | 71%        |
+| Policy, labels first | —        | **94.0** | 80.1        | —          | —        | —        | —          |
+| Interview, lean      | 86.3     | 93.2     | 79.9        | 60.0       | 72.0     | 85.3     | 74%        |
 
-*Opus builders, 100 points, test set. All routing cells, both interview rows, and most intents and hate speech cells average two or three runs; the rest are single runs. Gap closed is the share of the distance from zero-shot to the all-labels classifier that a strategy covers, averaged over intents, routing, hate speech and persuasion; on donation and deal, zero-shot is already at or above all labels, so there is no gap to close.*
+*Opus builders, 100 points, test set. All routing cells, the lean interview row, and most intents and hate speech cells average three runs; the rest are single runs. Gap closed is the share of the distance from zero-shot to the all-labels classifier that a strategy covers, averaged over intents, routing, hate speech and persuasion; on donation and deal, zero-shot is already at or above all labels, so there is no gap to close. Policy with labels first ran only on routing and hate speech.*
 
-The best strategy depends on where the missing knowledge lives. On Banking77 intents, whose meaning is in the text, uncertainty sampling works best, and spending a third of the budget on questions costs 2.8 points. On hate speech, where the labels follow a policy the builder cannot infer (hate against women and immigrants only), the order reverses: asking about the policy first reaches 81.3, against 75.1 for uncertainty sampling. On routing, where the mapping of intents to teams is private, uncertainty sampling is the worst choice: a counter-intuitive assignment sends a whole intent to the wrong team with confidence, so its records never look uncertain. The lean interview does best there: one message of questions about the routing rules took the first draft from about 81 to 88–91, and the runs finished at 93.0 on average. Piling more steps into the procedure did not help: the full interview scored below the best strategy on every task, because its fixed allowances left too few labels for what the builder actually needed to learn. On persuasion, where the builder already knows the annotation scheme, and on donation and deal, where nothing much is left to learn, the strategies differ less than repeated runs of the same one. Averaged over the tasks with something to learn, policy first closes the most of the gap to all labels (75%), ahead of free (71%) and the lean interview (69%), but no strategy is best everywhere.
+The best strategy depends on where the missing knowledge lives. On Banking77 intents, whose meaning is in the text, uncertainty sampling works best, and spending a third of the budget on questions costs 1.7 points. On routing, where the mapping of intents to teams is private, uncertainty sampling is the worst choice: a counter-intuitive assignment sends a whole intent to the wrong team with confidence, so its records never look uncertain. Every run that asked about the routing rules, or bought a label for each intent it could not place, scored 92–95, against 85–90 for every uncertainty run; one round of questions about the routing rules took a first draft from about 80 to 92–94. On hate speech, where the labels follow a policy the builder cannot infer (hate against women and immigrants only), the builder can learn the policy either by asking about it or by turning labelled errors into rules: uncertainty + rules reached 80.7 without asking a single question. Only pure uncertainty sampling, which swings the decision boundary with each noisy batch of labels, falls behind. Where nothing much is left to learn, questions can hurt: on deal reached, every classifier saved right after the user's answers about borderline negotiations scored lower than the draft before it. Averaged over the tasks with something to learn, uncertainty + rules, free and the lean interview close about three quarters of the gap to all labels, but no strategy is best everywhere.
+
+The simulated user turned out to matter as much as the strategies. Our first version answered from the written policy and a small labelled sample, and its answers about edge cases were stricter than its own labels, as annotation guidelines often are stricter than annotators. Builders that took its answers at face value lost accuracy, and asking about the policy first looked like the clear winner on hate speech. Once the simulated user knew how its labels actually apply the policy, that lead disappeared.
 
 # What the classifiers learn
 
@@ -112,7 +112,7 @@ Three things stand out. The builders almost always ask for finer distinctions th
 
 Comparing the budgeted classifiers with the ones built from every label, we expected the extra labels to buy a different kind of classifier. They did not: the shapes are the same. What differs is what the definitions contain. With a budget, builders paste the labels they bought into the definition: one persuasion classifier has a field on every option called "labelled examples of messages tagged this way", filled with real lines from the data, typos included ("So would you like to throw these wonderful kills a buck ?"). With every label, builders copy almost nothing and describe patterns instead, because no handful of examples is representative of a thousand records. An example only describes itself, and the classifier will never see that record again at test time.
 
-So we told budgeted builders that labels are evidence for rules and never part of the classifier: state what a mislabelled record shares with its class as a rule about meaning, test the rule on other records, and keep it only if it holds beyond the record that prompted it. Across ten matched runs, the rules-only classifiers contained no pool text, against up to 56 pasted records in the baselines, and scored level or slightly higher. The gains were where the baseline had pasted most: persuasion strategy rose from 58.5 to 61.5, and deal reached from 89.0 to 90.4. These are single runs, so we read them as "examples are not needed" rather than "rules are reliably better".
+So we told budgeted builders that labels are evidence for rules and never part of the classifier: state what a mislabelled record shares with its class as a rule about meaning, test the rule on other records, and keep it only if it holds beyond the record that prompted it. Across five runs matched to earlier uncertainty-sampling runs, the rules-only classifiers contained no pool text, against up to 56 pasted records in the baselines, and scored level or slightly higher. The gains were where the baseline had pasted most: persuasion strategy rose from 58.5 to 61.5, and deal reached from 89.0 to 90.4. These are single runs, so we read them as "examples are not needed" rather than "rules are reliably better".
 
 The resulting definitions read like an annotation guide. The persuasion builder, for instance, found that questions about the partner's own giving count as personal inquiries, the opposite of what its baseline had decided, and it dropped a hypothesis that moved 13 records on the strength of a single label.
 
