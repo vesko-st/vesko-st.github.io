@@ -44,7 +44,7 @@ First, the supervised case. We gave the Opus builder every training label and co
 
 *Test scores: accuracy for the Banking77 tasks, macro-F1 for the rest, both on a 0–100 scale. One run per cell.*
 
-The NL classifier matches or beats the fine-tuned encoder on all six tasks, by 3.4 to 4.3 points on hate speech and persuasion and by less than a point elsewhere, which we read as parity. It is not the state of the art: published full fine-tuning on Banking77 intents reaches 94.1. But it gets with specialized classifiers. Donation outcome is the odd one out: neither system beats a zero-shot classifier (73.3), because whether someone ends up donating is barely predictable from the conversation.
+The NL classifier matches or beats the fine-tuned encoder on all six tasks, by 3.4 to 4.3 points on hate speech and persuasion and by less than a point elsewhere, which we read as parity. It is not the state of the art: published full fine-tuning on Banking77 intents reaches 94.1. But it is competitive with specialized classifiers. Donation outcome is the odd one out: neither system beats a zero-shot classifier (73.3), because whether someone ends up donating is barely predictable from the conversation.
 
 # Without labels: active learning with the user
 
@@ -61,7 +61,7 @@ The more common case for an agent is that no labelled data exists. Here the buil
 | Deal reached        | 88.9      | 88.0             | **89.6**         |
 
 
-*Zero-shot is a Jev classifier built from the class names and description alone. The 100-point column averages 3 to 15 runs per task, across strategies.*
+*Zero-shot is a Jev classifier built from the class names and description alone. The 100-point column averages three runs of one strategy on intents, hate speech and persuasion, and the runs of every strategy on routing (15), donation and deal (5 each).*
 
 Wherever the user has something to teach, about 50 labels' worth of their time beats zero-shot by a wide margin: 6.6 points on intents, 17.6 on routing, 4.8 on hate speech and 14.8 on persuasion. On hate speech and persuasion, the budgeted classifiers even beat RoBERTa fine-tuned on twenty times as many labels (78.9 against 78.0, and 60.3 against 58.2). On donation and deal, zero-shot is already at the ceiling and there is nothing to learn.
 
@@ -85,7 +85,7 @@ How the agent spends the budget matters, so we devised a set of strategies, each
 | Policy, labels first | 86.6     | **94.0** | 80.1        | 60.0       | 71.9     | 84.2     | **76%**    |
 | Interview, lean      | 86.3     | 93.2     | 79.9        | 60.0       | 72.0     | 85.3     | 74%        |
 
-*Opus builders, 100 points, test set. All routing cells, the lean interview row, and most intents and hate speech cells average three runs; the rest are single runs. Gap closed is the share of the distance from zero-shot to the all-labels classifier that a strategy covers, averaged over intents, routing, hate speech and persuasion; on donation and deal, zero-shot is already at or above all labels, so there is no gap to close.*
+*Opus builders, 100 points, test set. All routing cells, the lean interview row, policy first on persuasion, and most intents and hate speech cells average three runs; the rest are single runs. Gap closed is the share of the distance from zero-shot to the all-labels classifier that a strategy covers, averaged over intents, routing, hate speech and persuasion; on donation and deal, zero-shot is already at or above all labels, so there is no gap to close.*
 
 The best strategy depends on where the missing knowledge lives. On Banking77 intents, whose meaning is in the text, uncertainty sampling works best, and spending a third of the budget on questions costs 1.7 points. On routing, where the mapping of intents to teams is private, uncertainty sampling is the worst choice: a counter-intuitive assignment sends a whole intent to the wrong team with confidence, so its records never look uncertain. Every run that asked about the routing rules, or bought a label for each intent it could not place, scored 92–95, against 85–90 for every uncertainty run; one round of questions about the routing rules took a first draft from about 80 to 92–94. On hate speech, where the labels follow a policy the builder cannot infer (hate against women and immigrants only), the builder can learn the policy either by asking about it or by turning labelled errors into rules: uncertainty + rules reached 80.7 without asking a single question. Only pure uncertainty sampling, which swings the decision boundary with each noisy batch of labels, falls behind. Where nothing much is left to learn, questions can hurt: on deal reached, every classifier saved right after the user's answers about borderline negotiations scored lower than the draft before it. Averaged over the tasks with something to learn, policy with labels first, uncertainty + rules, free and the lean interview all close about three quarters of the gap to all labels, but no strategy is best everywhere.
 
@@ -97,16 +97,16 @@ The finished classifiers are compact, readable definitions. Counting the rules i
 
 | Task                | Classes | Options | Rules     | Exclusion rules | Words         |
 | ------------------- | ------- | ------- | --------- | --------------- | ------------- |
-| Banking77 intents   | 77      | 77 (77) | 117 (181) | 38 (51)         | 1,892 (2,413) |
-| Banking77 routing   | 6       | 77 (93) | 87 (117)  | 22 (15)         | 896 (969)     |
-| Hate speech         | 2       | 12 (13) | 22 (26)   | 4 (8)           | 500 (505)     |
-| Persuasion strategy | 18      | 23 (18) | 36 (24)   | 8 (1)           | 896 (553)     |
-| Donation outcome    | 2       | 8 (10)  | 16 (18)   | 6 (6)           | 317 (293)     |
-| Deal reached        | 2       | 8 (5)   | 16 (9)    | 6 (4)           | 402 (161)     |
+| Banking77 intents   | 77      | 77 (77) | 124 (181) | 37 (51)         | 1,707 (2,413) |
+| Banking77 routing   | 6       | 78 (93) | 90 (117)  | 21 (15)         | 926 (969)     |
+| Hate speech         | 2       | 7 (13)  | 29 (26)   | 7 (8)           | 575 (505)     |
+| Persuasion strategy | 18      | 23 (18) | 49 (24)   | 7 (1)           | 1,005 (553)   |
+| Donation outcome    | 2       | 10 (10) | 27 (18)   | 12 (6)          | 483 (293)     |
+| Deal reached        | 2       | 7 (5)   | 22 (9)    | 7 (4)           | 479 (161)     |
 
-*Medians over the final classifiers of all budgeted Opus runs (every strategy, 10 to 23 runs per task); in brackets, the single classifier Opus built from all labels. Counts are for one member of the ensemble, as members are rewordings of each other. Exclusion rules are those that say what does not belong ("not", "rather than", "unless", "except").*
+*Medians over the final classifiers of all budgeted Opus runs (every strategy, 9 to 19 runs per task); in brackets, the single classifier Opus built from all labels. Counts are for one member of the ensemble, as members are rewordings of each other. Exclusion rules are those that say what does not belong ("not", "rather than", "unless", "except").*
 
-Three things stand out. The builders almost always ask for finer distinctions than the task does: binary tasks get 8 to 12 options, and routing's 6 teams are reached through the 77 intents, each mapped to its team. A good share of the rules, a fifth to a third, are exclusions that mark a boundary with a neighbouring option, which is where the classifier's errors are. And the definitions stay short: a few hundred words for a binary task, under 2,000 for 77 intents, so that a person can read the whole classifier in a few minutes. Ten to two hundred times as many labels do not make a classifier much bigger: from all labels, Opus wrote more rules on the Banking77 tasks and fewer on the conversation tasks, where budgeted builders padded their definitions with the records they had bought (more on that below). Building them is visible too: the builders that logged their reasoning wrote 580 hypotheses across 46 runs (a median of 10 per run), and dropped roughly one in six of them after testing them on the pool.
+Three things stand out. The builders almost always ask for finer distinctions than the task does: binary tasks get 7 to 10 options, and routing's 6 teams are reached through about one option per intent, each mapped to its team. A good share of the rules, 14% to 44% depending on the task, are exclusions that mark a boundary with a neighbouring option, which is where the classifier's errors are. And the definitions stay short: a few hundred words for a binary task, under 2,000 for 77 intents, so that a person can read the whole classifier in a few minutes. Ten to two hundred times as many labels do not make a classifier much bigger: from all labels, Opus wrote more rules on the Banking77 tasks and fewer on the others, most of all on the conversation tasks, where budgeted builders padded their definitions with the records they had bought (more on that below). Building them is visible too: the builders that logged their reasoning wrote 630 hypotheses across 36 runs (a median of 16.5 per run), and dropped roughly one in six of them after testing them on the pool.
 
 # A smaller finding: rules, not examples
 
